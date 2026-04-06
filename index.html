@@ -53,16 +53,17 @@
   .ltp-title-group .ltp-main { font-size: 13px; font-weight: 700; color: #fde68a; line-height: 1.1; white-space: nowrap; }
   .ltp-title-group .ltp-sub  { font-size: 10px; color: #93c5fd; white-space: nowrap; }
 
-  .nav-tabs { display: flex; align-items: stretch; height: 100%; }
+  .nav-tabs { display: flex; align-items: stretch; height: 100%; overflow-x: auto; scrollbar-width: none; flex-shrink: 1; min-width: 0; }
+  .nav-tabs::-webkit-scrollbar { display: none; }
 
   .nav-tab {
-    padding: 0 14px;
+    padding: 0 11px;
     display: flex; align-items: center;
     cursor: pointer;
-    font-size: 11.5px; font-weight: 500;
+    font-size: 11px; font-weight: 500;
     color: var(--text-secondary);
     border-right: 1px solid rgba(59,130,246,0.2);
-    transition: all 0.15s; white-space: nowrap; user-select: none;
+    transition: all 0.15s; white-space: nowrap; user-select: none; flex-shrink: 0;
   }
   .nav-tab:hover { background: rgba(37,99,235,0.15); color: white; }
   .nav-tab.active {
@@ -521,6 +522,365 @@
     pointer-events: none; z-index: 200; max-width: 220px; line-height: 1.5;
     opacity: 0; transition: opacity 0.15s;
   }
+
+  /* ── Ziel-Foto im Detail-Panel ── */
+  .target-photo {
+    width: 100%; aspect-ratio: 16/9;
+    overflow: hidden; border-radius: 4px;
+    margin-bottom: 8px; position: relative;
+    background: #000;
+    border: 1px solid rgba(59,130,246,0.25);
+  }
+  .target-photo img {
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: center;
+    display: block; opacity: 0;
+    transition: opacity 0.5s ease;
+  }
+  .target-photo img.loaded { opacity: 1; }
+  .target-photo .photo-credit {
+    position: absolute; bottom: 0; right: 0;
+    background: rgba(0,0,0,0.65);
+    color: rgba(255,255,255,0.55);
+    font-size: 7.5px; padding: 2px 5px;
+    font-family: 'Courier New', monospace;
+  }
+  .target-photo .photo-none {
+    width: 100%; height: 100%; display: flex;
+    align-items: center; justify-content: center;
+    color: rgba(255,255,255,0.12); font-size: 10px;
+  }
+
+  /* ── Gesamtflug-Ansicht ── */
+  #panel-flight {
+    flex: 1; display: none; flex-direction: column;
+    background: #00050f; overflow: hidden; position: relative;
+  }
+  .flight-title {
+    padding: 10px 14px 4px;
+    font-size: 12px; font-weight: 700; color: #fde68a;
+    border-bottom: 1px solid rgba(59,130,246,0.2);
+    flex-shrink: 0;
+  }
+  .flight-subtitle {
+    padding: 0 14px 8px;
+    font-size: 10px; color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+  #flightCanvas {
+    flex: 1; width: 100%; display: block;
+  }
+  .flight-legend {
+    display: flex; gap: 14px; padding: 6px 14px;
+    border-top: 1px solid rgba(59,130,246,0.15);
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--text-secondary); }
+  .leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .leg-line { width: 20px; height: 2px; flex-shrink: 0; }
+
+  /* ── Zeitreise-Steuerung ── */
+  .clock-wrap {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 11px; color: #60a5fa;
+    padding: 0 10px; border-left: 1px solid rgba(59,130,246,0.25);
+    white-space: nowrap; flex-shrink: 0; cursor: default;
+  }
+  .clock-wrap:hover .clock-edit-hint { opacity: 1; }
+  .clock-edit-hint { opacity: 0; transition: opacity 0.2s; font-size: 9px; color: rgba(96,165,250,0.6); }
+
+  .timemachine-bar {
+    display: none; align-items: center; gap: 8px;
+    background: rgba(11,61,145,0.35);
+    border: 1px solid rgba(59,130,246,0.35);
+    border-radius: 6px; padding: 5px 10px;
+    position: absolute; top: 48px; right: 6px;
+    z-index: 100; white-space: nowrap;
+    backdrop-filter: blur(6px);
+  }
+  .timemachine-bar.open { display: flex; }
+  .tm-label { font-size: 10px; color: #93c5fd; font-family: 'Courier New', monospace; }
+  .tm-input {
+    background: rgba(0,0,0,0.5); border: 1px solid rgba(59,130,246,0.5);
+    border-radius: 4px; color: #60a5fa; font-family: 'Courier New', monospace;
+    font-size: 12px; padding: 3px 8px; width: 100px; outline: none;
+    text-align: center;
+  }
+  .tm-btn {
+    padding: 4px 10px; border-radius: 4px; cursor: pointer;
+    font-size: 10px; font-family: inherit; border: 1px solid;
+    transition: all 0.15s;
+  }
+  .tm-btn-go { background: rgba(37,99,235,0.4); border-color: #3b82f6; color: #93c5fd; }
+  .tm-btn-go:hover { background: rgba(37,99,235,0.7); }
+  .tm-btn-live { background: rgba(22,163,74,0.35); border-color: #22c55e; color: #86efac; }
+  .tm-btn-live:hover { background: rgba(22,163,74,0.6); }
+  .tm-btn-close { background: rgba(100,116,139,0.2); border-color: rgba(100,116,139,0.4); color: #94a3b8; font-size: 13px; padding: 2px 8px; }
+
+  /* Zeitreise-Indikator */
+  .time-travel-badge {
+    background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.5);
+    color: #fcd34d; font-size: 9px; padding: 2px 6px; border-radius: 10px;
+    font-family: 'Courier New', monospace; display: none;
+  }
+  .time-travel-badge.active { display: inline-block; }
+
+  /* ── Impressum-Overlay ── */
+  .imprint-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,3,15,0.92);
+    z-index: 9999;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  .imprint-box {
+    max-width: 620px; width: 100%;
+    background: linear-gradient(160deg, #0d1b3e 0%, #060d1f 100%);
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 10px;
+    padding: 30px 32px;
+    box-shadow: 0 0 60px rgba(37,99,235,0.25);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .imprint-box::-webkit-scrollbar { width: 4px; }
+  .imprint-box::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 2px; }
+  .imprint-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .imprint-logo svg { width: 38px; height: 38px; }
+  .imprint-logo-text { font-size: 16px; font-weight: 700; color: #fde68a; line-height: 1.2; }
+  .imprint-logo-sub { font-size: 10px; color: #93c5fd; }
+  .imprint-notice {
+    background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.35);
+    border-radius: 6px; padding: 12px 14px; margin-bottom: 16px;
+    font-size: 11px; color: #fcd34d; line-height: 1.6;
+  }
+  .imprint-notice strong { color: #fde68a; }
+  .imprint-section { margin-bottom: 14px; }
+  .imprint-section h3 { font-size: 10px; color: #93c5fd; text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 5px; }
+  .imprint-section p, .imprint-section a { font-size: 11px; color: var(--text-secondary); line-height: 1.7; }
+  .imprint-section a { color: #60a5fa; }
+  .imprint-nasa-note {
+    font-size: 10px; color: var(--text-dim);
+    border-top: 1px solid rgba(59,130,246,0.15);
+    padding-top: 12px; margin-top: 4px; line-height: 1.6;
+  }
+  .imprint-accept {
+    width: 100%; margin-top: 18px;
+    padding: 10px; border-radius: 6px; cursor: pointer;
+    background: linear-gradient(90deg, #1d4ed8, #2563eb);
+    border: none; color: white; font-size: 12px; font-weight: 600;
+    font-family: inherit; letter-spacing: 0.3px;
+    transition: opacity 0.15s;
+  }
+  .imprint-accept:hover { opacity: 0.85; }
+
+
+  /* ══ GROUND-TRACK ANSICHT ══ */
+  /* ── Telemetrie Panel ── */
+  #panel-telemetry {
+    display: none;
+    flex: 1;
+    flex-direction: row;
+    overflow: hidden;
+    background: #000510;
+    position: relative;
+  }
+  .telem-moon-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .telem-moon-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: hue-rotate(210deg) saturate(1.8) brightness(0.68);
+  }
+  .telem-data-panel {
+    width: 300px;
+    min-width: 240px;
+    background: rgba(0,5,20,0.88);
+    border-left: 1px solid rgba(77,208,225,0.25);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 28px 22px;
+    gap: 18px;
+    font-family: 'Courier New', Courier, monospace;
+  }
+  .telem-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .telem-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: rgba(77,208,225,0.65);
+    text-transform: uppercase;
+  }
+  .telem-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: #4dd0e1;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+  }
+  .telem-value.large {
+    font-size: 22px;
+  }
+  .telem-value .telem-sub {
+    font-size: 11px;
+    opacity: 0.65;
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .telem-divider {
+    border: none;
+    border-top: 1px solid rgba(77,208,225,0.18);
+    margin: 2px 0;
+  }
+
+  /* ── Geo-Vollbild Panel ── */
+  #panel-geofull {
+    display: none;
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+  }
+  #geofullCanvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+  .geofull-moon-img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+  }
+
+  #panel-track {
+    flex: 1; display: none; flex-direction: column;
+    background: #000508; overflow: hidden; position: relative;
+  }
+
+  /* Header-Leiste */
+  .gt-header {
+    background: linear-gradient(180deg, #0d1b3e 0%, #060d20 100%);
+    border-bottom: 1px solid rgba(59,130,246,0.3);
+    display: flex; align-items: stretch;
+    flex-shrink: 0; height: 60px;
+  }
+  .gt-mission-id {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 16px; border-right: 1px solid rgba(59,130,246,0.25);
+    flex-shrink: 0;
+  }
+  .gt-mission-id .gt-title { font-size: 14px; font-weight: 700; color: white; line-height: 1.2; }
+  .gt-mission-id .gt-sub   { font-size: 10px; color: #93c5fd; }
+
+  .gt-current-block {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    padding: 0 14px; border-right: 1px solid rgba(59,130,246,0.2);
+  }
+  .gt-current-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .gt-current-name  { font-size: 15px; font-weight: 700; color: #4ade80; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gt-current-timers { display: flex; gap: 14px; margin-top: 2px; }
+  .gt-timer { font-family: 'Courier New', monospace; font-size: 11px; }
+  .gt-timer.pos { color: #4ade80; }
+  .gt-timer.neg { color: #f87171; }
+
+  .gt-next-block {
+    flex: 1; display: flex; flex-direction: column; justify-content: center;
+    padding: 0 14px; border-right: 1px solid rgba(59,130,246,0.2);
+  }
+  .gt-next-label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+  .gt-next-name  { font-size: 13px; font-weight: 600; color: #fde68a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .gt-timers-block {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 14px; gap: 2px; border-right: 1px solid rgba(59,130,246,0.2);
+    flex-shrink: 0; min-width: 160px;
+  }
+  .gt-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .gt-row-lbl { font-size: 9px; color: #64748b; width: 40px; }
+  .gt-row-el  { font-family: 'Courier New', monospace; font-size: 10px; color: #4ade80; }
+  .gt-row-rem { font-family: 'Courier New', monospace; font-size: 10px; color: #f87171; }
+
+  .gt-nasa-area {
+    display: flex; align-items: center; padding: 0 10px; flex-shrink: 0;
+  }
+
+  /* Timeline-Balken */
+  .gt-timeline {
+    height: 36px; background: #0a0f1e;
+    border-bottom: 1px solid rgba(59,130,246,0.25);
+    position: relative; overflow: hidden; flex-shrink: 0;
+  }
+  .gt-timeline-inner {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  }
+
+  /* Hauptbereich: linke Zielliste + rechte Karte */
+  .gt-body {
+    flex: 1; display: flex; overflow: hidden;
+  }
+
+  /* Linke Zielliste */
+  .gt-list {
+    width: 220px; flex-shrink: 0;
+    background: #060c1a;
+    border-right: 1px solid rgba(59,130,246,0.2);
+    overflow-y: auto; display: flex; flex-direction: column;
+  }
+  .gt-list::-webkit-scrollbar { width: 3px; }
+  .gt-list::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 2px; }
+  .gt-list-item {
+    padding: 3px 8px; font-size: 10px; color: var(--text-secondary);
+    border-bottom: 1px solid rgba(59,130,246,0.06);
+    cursor: pointer; transition: background 0.1s;
+    display: flex; align-items: center; gap: 4px;
+    line-height: 1.4;
+  }
+  .gt-list-item:hover { background: rgba(37,99,235,0.12); color: white; }
+  .gt-list-item.active {
+    background: rgba(74,222,128,0.12);
+    color: #4ade80;
+    border-left: 2px solid #4ade80;
+  }
+  .gt-list-item.upcoming { color: #fde68a; }
+  .gt-list-item.past { color: #475569; }
+  .gt-list-num { color: #475569; font-size: 9px; flex-shrink: 0; width: 14px; }
+
+  /* Karten-Canvas */
+  .gt-map-area {
+    flex: 1; position: relative; overflow: hidden;
+  }
+  #gtCanvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+  }
+
+  /* LLA-Koordinaten-Overlay */
+  .gt-coords {
+    position: absolute; bottom: 8px; left: 8px;
+    font-family: 'Courier New', monospace; font-size: 9px;
+    color: rgba(255,255,255,0.55);
+    background: rgba(0,5,15,0.6);
+    padding: 3px 7px; border-radius: 3px;
+    pointer-events: none;
+  }
+  .gt-coords span { color: #4dd0e1; }
+
 </style>
 </head>
 <body>
@@ -545,17 +905,33 @@
   <div class="nav-tabs">
     <div class="nav-tab active" id="tab-ltp" onclick="switchMainTab('ltp')">Mondzielplan</div>
     <div class="nav-tab" id="tab-geo" onclick="switchMainTab('geo')">Mondgeographie-Überblick</div>
+    <div class="nav-tab" id="tab-track" onclick="switchMainTab('track')">Ground-Track</div>
+    <div class="nav-tab" id="tab-telemetry" onclick="switchMainTab('telemetry')">Telemetrie</div>
+    <div class="nav-tab" id="tab-geofull" onclick="switchMainTab('geofull')">Geo-Vollbild</div>
     <div class="nav-arrow" onclick="showMoreViews()" title="Weitere Ansichten">›</div>
   </div>
 
   <div class="nav-spacer"></div>
-  <div class="live-clock" id="liveClock">21:18:00 MESZ</div>
+  <div class="clock-wrap" onclick="toggleTimeMachine()" title="Klicken für Zeitreise">
+    <span id="liveClock">--:--:-- MESZ</span>
+    <span class="time-travel-badge" id="timeTravelBadge">◀ ZEITREISE</span>
+    <span class="clock-edit-hint">✎</span>
+  </div>
+  <div class="timemachine-bar" id="timeMachineBar">
+    <span class="tm-label">MESZ Uhrzeit:</span>
+    <input type="text" class="tm-input" id="tmInput" placeholder="23:02" maxlength="5"
+      onkeydown="if(event.key==='Enter')applyTimeMachine()">
+    <button class="tm-btn tm-btn-go" onclick="applyTimeMachine()">→ Springen</button>
+    <button class="tm-btn tm-btn-live" onclick="returnToLive()">● LIVE</button>
+    <button class="tm-btn tm-btn-close" onclick="closeTimeMachine()">×</button>
+  </div>
 
   <div class="top-right-tabs">
     <div class="top-right-tab" id="rtab-overview" onclick="switchRightTab('overview')">Überblick</div>
     <div class="top-right-tab" id="rtab-timeline" onclick="switchRightTab('timeline')">Zeitplan</div>
     <div class="top-right-tab active" id="rtab-targets" onclick="switchRightTab('targets')">Ziele</div>
     <div class="top-right-tab" id="rtab-guide" onclick="switchRightTab('guide')">Leitfaden</div>
+    <div class="top-right-tab" id="rtab-flight" onclick="switchRightTab('flight')">Gesamtflug</div>
   </div>
 
   <div class="nasa-logo-area">
@@ -581,6 +957,127 @@
   <!-- ── SIDEBAR ── -->
   <div class="sidebar">
     <div class="target-list" id="targetList">
+
+
+      <div class="target-item discussion" onclick="selTarget(this,'a-intro')" data-id="a-intro">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name">a. Vorbeiflug-Start &amp; Einweisung</span>
+        <span class="target-time">22:45 MESZ</span>
+      </div>
+
+      <div class="target-item discussion" onclick="selTarget(this,'b-intro')" data-id="b-intro">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name">b. Diskussion: Einführung</span>
+        <span class="target-time">22:50 MESZ</span>
+      </div>
+
+      <div class="target-item discussion" onclick="selTarget(this,'c-nearfar')" data-id="c-nearfar">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name">c. Diskussion: Vorderseite/Rückseite</span>
+        <span class="target-time">23:00 MESZ</span>
+      </div>
+
+      <div class="target-item striped" onclick="selTarget(this,'1-aristarchus')" data-id="1-aristarchus">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">1. </span>Aristarchus-Plateau</span>
+        <div class="target-badges">
+          <span class="badge badge-cam" title="Kameraaufgabe">📷</span>
+        </div>
+        <span class="target-time">22:53 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'2-grimaldi')" data-id="2-grimaldi">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">2. </span>Grimaldi-Becken</span>
+        <div class="target-badges">
+          <span class="badge badge-cam" title="Kameraaufgabe">📷</span>
+        </div>
+        <span class="target-time">22:57 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'3-mare-orientale')" data-id="3-mare-orientale">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">3. </span>Mare Orientale (Rand)</span>
+        <div class="target-badges">
+          <span class="badge badge-cam" title="Kameraaufgabe">📷</span>
+        </div>
+        <span class="target-time">23:01 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'4-rille')" data-id="4-rille">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">4. </span>Schröter-Rille</span>
+        <span class="target-time">23:03 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'5-kepler')" data-id="5-kepler">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">5. </span>Kepler-Krater</span>
+        <div class="target-badges">
+          <span class="badge badge-cam" title="Kameraaufgabe">📷</span>
+        </div>
+        <span class="target-time">23:04 MESZ</span>
+      </div>
+
+      <div class="target-item discussion" onclick="selTarget(this,'crew-swap-1')" data-id="crew-swap-1">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name">Besatzungswahl #1</span>
+        <span class="target-time">23:05 MESZ</span>
+      </div>
+
+      <div class="target-item striped" onclick="selTarget(this,'6-ocean-storms')" data-id="6-ocean-storms">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">6. </span>Oceanus Procellarum</span>
+        <div class="target-badges">
+          <span class="badge badge-cam" title="Kameraaufgabe">📷</span>
+        </div>
+        <span class="target-time">23:06 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'7-einstein')" data-id="7-einstein">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">7. </span>Einstein-Becken</span>
+        <span class="target-time">23:07 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'8-montes-rook')" data-id="8-montes-rook">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">8. </span>Montes Rook / Cordillera</span>
+        <div class="target-badges">
+          <span class="badge badge-lock" title="Pflichtbeobachtung">🔒</span>
+        </div>
+        <span class="target-time">23:08 MESZ</span>
+      </div>
+
+      <div class="target-item" onclick="selTarget(this,'9-maunder')" data-id="9-maunder">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">9. </span>Maunder-Krater</span>
+        <span class="target-time">23:09 MESZ</span>
+      </div>
+
+      <div class="target-item striped" onclick="selTarget(this,'10-glushko')" data-id="10-glushko">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event,this)"></div>
+        <span class="target-name"><span class="tnum">10. </span>Glushko-Krater (1/2)</span>
+        <div class="target-badges">
+          <span class="badge badge-cam" title="Kameraaufgabe">📷</span>
+          <span class="badge badge-lock" title="Pflichtbeobachtung">🔒</span>
+        </div>
+        <span class="target-time">23:05 MESZ</span>
+      </div>
 
       <div class="target-item discussion" onclick="selTarget(this,'d-cabin')" data-id="d-cabin">
         <span class="flag-icon">⚑</span>
@@ -693,6 +1190,11 @@
     <div class="target-detail" id="targetDetail">
       <div class="detail-title" id="detTitle">12. Orientale-Becken</div>
       <div class="detail-subtitle" id="detSubtitle">OR·ee·en·TAHL·ee</div>
+
+      <div class="target-photo" id="detPhoto">
+        <img id="detPhotoImg" src="" alt="" onload="this.classList.add('loaded')" onerror="this.style.display='none'">
+        <div class="photo-credit" id="detPhotoCredit"></div>
+      </div>
 
       <div class="flyby-progress">
         <div class="flyby-label">Vorbeiflug-Fortschritt</div>
@@ -904,7 +1406,184 @@
       </div>
     </div>
 
+  
+    <!-- GESAMTFLUG-ANSICHT -->
+    <div id="panel-flight">
+      <div class="flight-title">🛸 Artemis II – Gesamte Flugbahn</div>
+      <div class="flight-subtitle">1. April 2026, 00:24 MESZ (Start) → 10. April 2026 (Wasserung)</div>
+      <canvas id="flightCanvas"></canvas>
+      <div class="flight-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#4ade80"></div>Orion-Trajektorie</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#3b82f6;width:16px;height:16px;border-radius:50%;border:2px solid #60a5fa"></div>Erde</div>
+        <div class="leg-dot" style="background:#94a3b8;margin-left:14px;width:10px;height:10px;border-radius:50%;display:inline-block"></div><div class="leg-item">Mond</div>
+        <div class="leg-item"><div class="leg-line" style="background:#ef4444"></div>Orion aktuell</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#fbbf24"></div>Ereignisse</div>
+      </div>
+    </div>
+
+    <!-- ══ GROUND-TRACK (3. Haupt-Tab) ══ -->
+    <div id="panel-track" style="display:none">
+      <!-- Header -->
+      <div class="gt-header">
+        <div class="gt-mission-id">
+          <div class="gt-title">Artemis II</div>
+          <div class="gt-sub">Lunar Flyby</div>
+        </div>
+        <div class="gt-current-block">
+          <div class="gt-current-label">Current</div>
+          <div class="gt-current-name" id="gt-cur-name">—</div>
+          <div class="gt-current-timers">
+            <span class="gt-timer pos" id="gt-cur-elapsed">+00:00:00</span>
+            <span class="gt-timer neg" id="gt-cur-remain">-00:00:00</span>
+          </div>
+        </div>
+        <div class="gt-next-block">
+          <div class="gt-next-label">Next</div>
+          <div class="gt-next-name" id="gt-next-name">—</div>
+        </div>
+        <div class="gt-timers-block">
+          <div class="gt-row">
+            <span class="gt-row-lbl">Flyby</span>
+            <span class="gt-row-el" id="gt-flyby-el">—</span>
+            <span class="gt-row-rem" id="gt-flyby-rem">—</span>
+          </div>
+          <div class="gt-row">
+            <span class="gt-row-lbl">Shift</span>
+            <span class="gt-row-el" id="gt-shift-el">—</span>
+            <span class="gt-row-rem" id="gt-shift-rem">—</span>
+          </div>
+          <div class="gt-row">
+            <span class="gt-row-lbl">Target</span>
+            <span class="gt-row-el" id="gt-tgt-el">—</span>
+            <span class="gt-row-rem" id="gt-tgt-rem">—</span>
+          </div>
+        </div>
+        <div class="gt-nasa-area">
+          <svg width="34" height="34" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="50" cy="50" rx="48" ry="48" fill="#0b3d91"/>
+            <ellipse cx="50" cy="50" rx="48" ry="48" fill="none" stroke="white" stroke-width="2"/>
+            <path d="M10 58 Q30 38 90 42" stroke="#fc3d21" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <text x="50" y="55" font-size="18" fill="white" text-anchor="middle" font-family="Arial Black" font-weight="900" letter-spacing="1">NASA</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Timeline-Balken -->
+      <canvas id="gtTimeline" height="36" style="width:100%;display:block;flex-shrink:0;background:#080f20;border-bottom:1px solid rgba(59,130,246,0.2)"></canvas>
+
+      <!-- Body: Liste + Karte -->
+      <div class="gt-body">
+        <!-- Zielliste -->
+        <div class="gt-list" id="gtList">
+      <div class="gt-list-item" data-gtnum="1" onclick="gtSelectItem(this,'1')"><span class="gt-list-num">1.</span> Disc. #1: Warm up</div>
+      <div class="gt-list-item" data-gtnum="2" onclick="gtSelectItem(this,'2')"><span class="gt-list-num">2.</span> Disc. #2: Near/Farside</div>
+      <div class="gt-list-item" data-gtnum="3" onclick="gtSelectItem(this,'3')"><span class="gt-list-num">3.</span> Crater Duo: Glushko (1/2)</div>
+      <div class="gt-list-item" data-gtnum="4" onclick="gtSelectItem(this,'4')"><span class="gt-list-num">4.</span> Crater Duo: Ohm</div>
+      <div class="gt-list-item" data-gtnum="a" onclick="gtSelectItem(this,'a')"><span class="gt-list-num">a.</span> Crew Position Swap</div>
+      <div class="gt-list-item" data-gtnum="5" onclick="gtSelectItem(this,'5')"><span class="gt-list-num">5.</span> Aristarchus Plateau</div>
+      <div class="gt-list-item" data-gtnum="6" onclick="gtSelectItem(this,'6')"><span class="gt-list-num">6.</span> Reiner Gamma</div>
+      <div class="gt-list-item" data-gtnum="b" onclick="gtSelectItem(this,'b')"><span class="gt-list-num">b.</span> Cabin and Window Teams Swap</div>
+      <div class="gt-list-item" data-gtnum="7" onclick="gtSelectItem(this,'7')"><span class="gt-list-num">7.</span> Whole Moon</div>
+      <div class="gt-list-item" data-gtnum="8" onclick="gtSelectItem(this,'8')"><span class="gt-list-num">8.</span> Orientale Basin (1/2)</div>
+      <div class="gt-list-item" data-gtnum="c" onclick="gtSelectItem(this,'c')"><span class="gt-list-num">c.</span> Crew Position Swap</div>
+      <div class="gt-list-item" data-gtnum="9" onclick="gtSelectItem(this,'9')"><span class="gt-list-num">9.</span> Crew Choice #1</div>
+      <div class="gt-list-item" data-gtnum="10" onclick="gtSelectItem(this,'10')"><span class="gt-list-num">10.</span> Disc. #3: Farside Albedo/Color</div>
+      <div class="gt-list-item" data-gtnum="d" onclick="gtSelectItem(this,'d')"><span class="gt-list-num">d.</span> Cabin and Window Teams Swap</div>
+      <div class="gt-list-item" data-gtnum="11" onclick="gtSelectItem(this,'11')"><span class="gt-list-num">11.</span> Glushko Crater (2/2)</div>
+      <div class="gt-list-item" data-gtnum="12" onclick="gtSelectItem(this,'12')"><span class="gt-list-num">12.</span> Orientale Basin (2/2)</div>
+      <div class="gt-list-item" data-gtnum="13" onclick="gtSelectItem(this,'13')"><span class="gt-list-num">13.</span> Hertzsprung Basin</div>
+      <div class="gt-list-item" data-gtnum="e" onclick="gtSelectItem(this,'e')"><span class="gt-list-num">e.</span> Window Team Position Swap</div>
+      <div class="gt-list-item" data-gtnum="14" onclick="gtSelectItem(this,'14')"><span class="gt-list-num">14.</span> Crew Choice #2</div>
+      <div class="gt-list-item" data-gtnum="15" onclick="gtSelectItem(this,'15')"><span class="gt-list-num">15.</span> Disc. #5: Terminator</div>
+      <div class="gt-list-item" data-gtnum="f" onclick="gtSelectItem(this,'f')"><span class="gt-list-num">f.</span> Cabin and Window Teams Swap</div>
+      <div class="gt-list-item" data-gtnum="16" onclick="gtSelectItem(this,'16')"><span class="gt-list-num">16.</span> Ohm Crater (2/2)</div>
+      <div class="gt-list-item" data-gtnum="17" onclick="gtSelectItem(this,'17')"><span class="gt-list-num">17.</span> Disc. #5: Limb</div>
+      <div class="gt-list-item" data-gtnum="18" onclick="gtSelectItem(this,'18')"><span class="gt-list-num">18.</span> Earthset</div>
+      <div class="gt-list-item" data-gtnum="19" onclick="gtSelectItem(this,'19')"><span class="gt-list-num">19.</span> Vavilov Crater</div>
+      <div class="gt-list-item" data-gtnum="g" onclick="gtSelectItem(this,'g')"><span class="gt-list-num">g.</span> Window Team Position Swap</div>
+      <div class="gt-list-item" data-gtnum="20" onclick="gtSelectItem(this,'20')"><span class="gt-list-num">20.</span> Crew Choice #3</div>
+      <div class="gt-list-item" data-gtnum="21" onclick="gtSelectItem(this,'21')"><span class="gt-list-num">21.</span> Impact Flashes</div>
+      <div class="gt-list-item" data-gtnum="22" onclick="gtSelectItem(this,'22')"><span class="gt-list-num">22.</span> Lofted Lunar Dust</div>
+      <div class="gt-list-item" data-gtnum="23" onclick="gtSelectItem(this,'23')"><span class="gt-list-num">23.</span> Earthrise</div>
+      <div class="gt-list-item" data-gtnum="h" onclick="gtSelectItem(this,'h')"><span class="gt-list-num">h.</span> Observation Break</div>
+      <div class="gt-list-item" data-gtnum="24" onclick="gtSelectItem(this,'24')"><span class="gt-list-num">24.</span> Sunset</div>
+      <div class="gt-list-item" data-gtnum="25" onclick="gtSelectItem(this,'25')"><span class="gt-list-num">25.</span> Disc. #6: Forward Look</div>
+      <div class="gt-list-item" data-gtnum="26" onclick="gtSelectItem(this,'26')"><span class="gt-list-num">26.</span> Eclipse Moon (1/2)</div>
+      <div class="gt-list-item" data-gtnum="i" onclick="gtSelectItem(this,'i')"><span class="gt-list-num">i.</span> Window Team Position Swap</div>
+      <div class="gt-list-item" data-gtnum="27" onclick="gtSelectItem(this,'27')"><span class="gt-list-num">27.</span> Deep Space (1/2)</div>
+      <div class="gt-list-item" data-gtnum="j" onclick="gtSelectItem(this,'j')"><span class="gt-list-num">j.</span> Window Team Position Swap</div>
+      <div class="gt-list-item" data-gtnum="28" onclick="gtSelectItem(this,'28')"><span class="gt-list-num">28.</span> Deep Space (2/2)</div>
+      <div class="gt-list-item" data-gtnum="29" onclick="gtSelectItem(this,'29')"><span class="gt-list-num">29.</span> Eclipsed Moon (2/2)</div>
+      <div class="gt-list-item" data-gtnum="30" onclick="gtSelectItem(this,'30')"><span class="gt-list-num">30.</span> Sunrise</div>
+        </div>
+
+        <!-- Mondkarte -->
+        <div class="gt-map-area">
+          <canvas id="gtCanvas"></canvas>
+          <div class="gt-coords" id="gtCoords">
+            LLA: <span id="gtLat">—</span> <span id="gtLon">—</span> · <span id="gtAlt">—</span> km
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /map-panel -->
+
+  <!-- ══ TELEMETRIE (4. Haupt-Tab) ══ -->
+  <div id="panel-telemetry" style="display:none;flex:1;flex-direction:row;overflow:hidden;">
+  <div class="telem-moon-wrap">
+    <img class="telem-moon-img"
+         src="https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004886/lroc_color_poles_1k.jpg"
+         alt="Mond" onerror="this.style.background='#0a1a3a';this.src=''">
+  </div>
+  <div class="telem-data-panel">
+    <div class="telem-field">
+      <div class="telem-label">UTC Time</div>
+      <div class="telem-value large" id="telem-utc">--</div>
+    </div>
+    <hr class="telem-divider">
+    <div class="telem-field">
+      <div class="telem-label">Mission Elapsed</div>
+      <div class="telem-value" id="telem-met">--</div>
+    </div>
+    <div class="telem-field">
+      <div class="telem-label">Pericynthion</div>
+      <div class="telem-value" id="telem-peri">--</div>
+    </div>
+    <hr class="telem-divider">
+    <div class="telem-field">
+      <div class="telem-label">Moon (Earth) Altitude</div>
+      <div class="telem-value" id="telem-alt">-- km <span class="telem-sub" id="telem-alt-earth"></span></div>
+    </div>
+    <div class="telem-field">
+      <div class="telem-label">400mm Pixel Scale</div>
+      <div class="telem-value" id="telem-pixel">-- m</div>
+    </div>
+    <hr class="telem-divider">
+    <div class="telem-field">
+      <div class="telem-label">Illuminated Fraction</div>
+      <div class="telem-value" id="telem-illum">--.-%</div>
+    </div>
+    <div class="telem-field">
+      <div class="telem-label">Subsolar Point</div>
+      <div class="telem-value" id="telem-subsolar">--.--° --.--°</div>
+    </div>
+    <div class="telem-field">
+      <div class="telem-label">Sub-Spacecraft Point</div>
+      <div class="telem-value" id="telem-subsc">--.--° --.--°</div>
+    </div>
+  </div>
+  </div><!-- /panel-telemetry -->
+
+  <!-- ══ GEO-VOLLBILD (5. Haupt-Tab) ══ -->
+  <div id="panel-geofull" style="display:none;flex:1;position:relative;overflow:hidden;">
+    <img class="geofull-moon-img"
+         src="https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004886/lroc_color_poles_1k.jpg"
+         id="geofullImg" alt="Mondgeographie Vollbild"
+         onerror="this.style.background='#222';this.src=''">
+    <canvas id="geofullCanvas"></canvas>
+  </div><!-- /panel-geofull -->
+
 </div><!-- /main-content -->
 
 <!-- ══ GRADIENT BAR ══ -->
@@ -1023,6 +1702,178 @@
 <script>
 // ─── TARGET DATA (Deutsch) ───────────────────────────────────────────────────
 const TARGETS = {
+
+  'a-intro': {
+    title: 'a. Vorbeiflug-Start & Einweisung', subtitle: 'Missionsbeginn',
+    info: ['Offizieller Beginn der Mondbeobachtungsaktivitäten.',
+           'Besatzung nimmt Positionen ein und beginnt erste Orientierung.',
+           'Mondvorderseite in Sicht – erste Landmarken werden identifiziert.'],
+    cam: ['Erste Orientierungsaufnahmen der Mondvorderseite.'],
+    unaided: ['Erste Eindrücke des Mondes aus diesem einzigartigen Blickwinkel notieren.',
+              'Bekannte Merkmale (Mare, Krater, Hochland) identifizieren.'], type:'ops',
+    img: 'https://svs.gsfc.nasa.gov/vis/a000000/a004800/a004886/lroc_color_poles_1k.jpg',
+    imgCredit: 'NASA SVS – LRO WAC Mosaik'
+  },
+  'b-intro': {
+    title: 'b. Diskussion: Einführung', subtitle: 'Gemeinsame Einweisung',
+    info: ['Orientierung anhand von Hauptlandmarken auf der Vorderseite.',
+           'Identifikation der sichtbaren Mare-Regionen.',
+           'Überblick über den geplanten Beobachtungsablauf.'],
+    cam: [], unaided: ['Alle Besatzungsmitglieder orientieren sich gemeinsam.'], type:'ops',
+    img: '', imgCredit: ''
+  },
+  'c-nearfar': {
+    title: 'c. Diskussion: Vorderseite/Rückseite', subtitle: 'Wissenschaftsdiskussion',
+    info: ['Vergleich von Mare und Strahlenkratern auf Vorder- und Rückseite.',
+           'Diskussion über asymmetrische Verteilung von Mare-Basalt.',
+           'Warum hat die Vorderseite mehr dunkle Mare als die Rückseite?'],
+    cam: [], unaided: ['Unterschiede zwischen Vorder- und Rückseite direkt beobachten und beschreiben.'], type:'discussion',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Moon_Farside_LRO.jpg/1280px-Moon_Farside_LRO.jpg',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC Rückseite'
+  },
+  '1-aristarchus': {
+    title: '1. Aristarchus-Plateau', subtitle: 'Hellster Krater des Mondes',
+    info: ['Aristarchus ist der hellste große Krater auf dem Mond (Albedo > 0.3).',
+           'Umgeben von einem dunklen pyroclastischen Plateau.',
+           'Starke Farbkontraste zwischen hellem Krater und dunklem Umfeld.',
+           'Kandidat für rezente vulkanische Aktivität (TLP – Transient Lunar Phenomena).'],
+    cam: ['Gesamtaufnahme des Kraters und Plateaus.',
+          'Farbkontraste zwischen Kraterwand und Plateau dokumentieren.',
+          'Strahlensystem um Aristarchus fotografieren.'],
+    unaided: ['Helligkeit im Vergleich zur Umgebung beschreiben.',
+              'Farbunterschiede zwischen Plateau und umgebenden Regionen notieren.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Aristarchus_crater_-_LROC_-_WAC.JPG/1280px-Aristarchus_crater_-_LROC_-_WAC.JPG',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC'
+  },
+  '2-grimaldi': {
+    title: '2. Grimaldi-Becken', subtitle: 'Dunkelstes Becken am Mondrand',
+    info: ['Grimaldi ist eines der dunkelsten Merkmale auf dem Mond.',
+           'Kleines Mare-Becken am westlichen Rand der Mondvorderseite.',
+           'Markanter Kontrast zum hellen Hochland drumherum.',
+           'Gut sichtbar trotz randnaher Position – Libration beeinflusst Sichtbarkeit.'],
+    cam: ['Gesamtaufnahme des Grimaldi-Bodens und seiner Ränder.',
+          'Albedokontrast zum umgebenden Hochland dokumentieren.'],
+    unaided: ['Dunkle Färbung im Vergleich zur Umgebung beschreiben.',
+              'Form und Ausdehnung des Beckens einschätzen.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Grimaldi_LROC_WAC.jpg/800px-Grimaldi_LROC_WAC.jpg',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC'
+  },
+  '3-mare-orientale': {
+    title: '3. Mare Orientale (Rand)', subtitle: 'Dunkles inneres Mare des Orientale-Beckens',
+    info: ['Kleines dunkles Mare im Innern des Orientale-Beckens.',
+           'Zeigt Basalt-Füllung des Beckens nach dem Einschlag.',
+           'Teil der mehrstufigen Orientale-Ringstruktur.',
+           'Erste Sichtung des Orientale-Systems beim Annähern.'],
+    cam: ['Frühe Aufnahmen des Orientale-Systems aus der Distanz.',
+          'Position des inneren Mare relativ zu den Ringstrukturen dokumentieren.'],
+    unaided: ['Dunklen Fleck im westlichen Randbereich identifizieren.',
+              'Erste Einschätzung der Ausdehnung des Orientale-Systems.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Orientale_basin_GRAIL_gravity_map.jpg/1280px-Orientale_basin_GRAIL_gravity_map.jpg',
+    imgCredit: 'NASA SVS / GRAIL – Orientale-Becken'
+  },
+  '4-rille': {
+    title: '4. Schröter-Rille', subtitle: 'Größtes Rillensystem des Mondes',
+    info: ['Vallis Schröteri – größte sinuöse Rille auf dem Mond.',
+           'Länge ca. 168 km, Breite bis 11 km, Tiefe bis 1 km.',
+           'Entstanden durch Lavastrom-Aktivität (Lavaröhren-Kollaps).',
+           'Direkt benachbart zum hellen Aristarchus-Krater.'],
+    cam: ['Längsaufnahme der Rille und ihres Verlaufs.',
+          'Breite und Tiefe durch Schattengeometrie abschätzen.'],
+    unaided: ['Rille als dunkle Linie im Hochland identifizieren.',
+              'Zusammenhang mit Aristarchus-Plateau beschreiben.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Vallis_Schr%C3%B6teri_-_LROC_-_WAC.JPG/1280px-Vallis_Schr%C3%B6teri_-_LROC_-_WAC.JPG',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC'
+  },
+  '5-kepler': {
+    title: '5. Kepler-Krater', subtitle: 'Strahlenkrater in Oceanus Procellarum',
+    info: ['Junger Einschlagkrater mit ausgeprägtem Strahlensystem.',
+           'Liegt inmitten des dunklen Oceanus Procellarum.',
+           'Heller Kontrast zum umgebenden dunklen Basalt.',
+           'Ähnlich jung wie Glushko – zum Vergleich geeignet.'],
+    cam: ['Gesamtaufnahme von Krater und Strahlensystem.',
+          'Albedokontrast zu Oceanus Procellarum dokumentieren.'],
+    unaided: ['Heller Fleck mit Strahlen im dunklen Mare identifizieren.',
+              'Ausdehnung der Strahlen schätzen.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Kepler_crater_LROC_WAC.jpg/800px-Kepler_crater_LROC_WAC.jpg',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC'
+  },
+  'crew-swap-1': {
+    title: 'Besatzungswahl #1', subtitle: 'Freie Beobachtung',
+    info: ['Erste freie Beobachtungszeit für die Besatzung.',
+           'Jedes Besatzungsmitglied wählt ein interessantes Merkmal.',
+           'Dokumentation unerwarteter Beobachtungen.'],
+    cam: ['Freie Dokumentation interessanter Merkmale nach Wahl.'],
+    unaided: ['Persönlichen Eindruck des Mondes zu Beginn des Vorbeiflugs festhalten.'], type:'crew',
+    img: '', imgCredit: ''
+  },
+  '6-ocean-storms': {
+    title: '6. Oceanus Procellarum', subtitle: 'Größtes Mare-Gebiet des Mondes',
+    info: ['Das größte zusammenhängende Mare-Gebiet auf dem Mond.',
+           'Vulkanische Basalt-Ebene aus dem Procellarum KREEP Terrane.',
+           'Ungewöhnliche Zusammensetzung – reich an Kalium, Seltenen Erden und Phosphor.',
+           'Möglicher Hinweis auf frühzeitliche Magmaozeane.'],
+    cam: ['Weitwinkelaufnahme des gesamten Oceanus Procellarum.',
+          'Albedo-Variationen und Kratertexturen dokumentieren.',
+          'Grenzregionen zu Hochland aufnehmen.'],
+    unaided: ['Dunkle Ebene und ihre Ausdehnung beschreiben.',
+              'Inselkrater im Mare identifizieren.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Oceanus_Procellarum_GRAIL_gravity.jpg/800px-Oceanus_Procellarum_GRAIL_gravity.jpg',
+    imgCredit: 'NASA / GRAIL – Procellarum'
+  },
+  '7-einstein': {
+    title: '7. Einstein-Becken', subtitle: 'Großes Becken nahe Mondrand',
+    info: ['Altes, stark degradiertes Einschlagsbecken nahe dem westlichen Rand.',
+           'Kaum von der Erde beobachtbar.',
+           'Überlappt mit dem Orientale-Auswurfsystem.',
+           'Zeigt Alterungsmerkmale über Milliarden Jahre.'],
+    cam: ['Aufnahmen des Beckens und seiner Randstrukturen.',
+          'Degradation im Vergleich zu Orientale dokumentieren.'],
+    unaided: ['Alte, unregelmäßige Ringstruktur identifizieren.',
+              'Unterschied zu frischen Kratern beschreiben.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Moon_Farside_LRO.jpg/1280px-Moon_Farside_LRO.jpg',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC'
+  },
+  '8-montes-rook': {
+    title: '8. Montes Rook / Cordillera', subtitle: 'Äußere Ringe des Orientale-Beckens',
+    info: ['Montes Cordillera (Außenring, ~930 km) und Montes Rook (Innenring, ~620 km).',
+           'Eindrucksvollstes Mehrringebecken-System auf dem Mond.',
+           'Entstanden durch Schockwellen des Orientale-Einschlags.',
+           'Höhenunterschiede bis zu 6 km in den Gebirgszügen.'],
+    cam: ['Aufnahmen der Ringgebirge und ihrer Höhenunterschiede.',
+          'Schattengeometrie für Topographie nutzen.',
+          'Beide Ringe in einem Bild festhalten.'],
+    unaided: ['Konzentrische Ringstruktur beschreiben.',
+              'Höhe der Gebirge durch Schattenlänge einschätzen.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/16/Orientale_basin_GRAIL_gravity_map.jpg/1280px-Orientale_basin_GRAIL_gravity_map.jpg',
+    imgCredit: 'NASA SVS – Orientale-Ringstruktur'
+  },
+  '9-maunder': {
+    title: '9. Maunder-Krater', subtitle: 'Krater im Orientale-Auswurfsystem',
+    info: ['Komplexer Krater im Auswurfsystem des Orientale-Beckens.',
+           'Zeigt Wechselwirkung zwischen Orientale-Auswurf und späterem Einschlag.',
+           'Teil der Rückseiten-Hochland-Topographie.',
+           'Benannt nach dem britischen Astronomen Edward Maunder.'],
+    cam: ['Aufnahme von Maunder im Kontext des Orientale-Auswurfsystems.',
+          'Kratermorphologie dokumentieren.'],
+    unaided: ['Position relativ zu Orientale einschätzen.',
+              'Morphologie beschreiben.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Hertzsprung_crater_large.jpg/800px-Hertzsprung_crater_large.jpg',
+    imgCredit: 'NASA/GSFC/ASU – LROC'
+  },
+  '10-glushko': {
+    title: '10. Glushko-Krater (1/2)', subtitle: 'Erste photometrische Beobachtung',
+    info: ['Hochalbedo-Krater mit ausgeprägtem Strahlensystem.',
+           'Erste von zwei photometrischen Beobachtungen.',
+           'Referenzpunkt für spätere Beobachtung nach Positionswechsel.',
+           'Liegt westlich von Oceanus Procellarum.'],
+    cam: ['Gesamtaufnahme von Glushko und Strahlensystem.',
+          'Mosaik des Strahlenmusters.',
+          'Scheinbare Helligkeit dokumentieren.'],
+    unaided: ['Helligkeitswahrnehmung und Strahlensystem beschreiben.',
+              'Referenzwert für zweite Beobachtung festhalten.'], type:'science',
+    img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Glushko_ray_system_-_LROC_-_WAC.JPG/1200px-Glushko_ray_system_-_LROC_-_WAC.JPG',
+    imgCredit: 'NASA/GSFC/ASU – LROC WAC'
+  },
   'd-cabin': {
     title: 'd. Kabinen- & Fensterteam-Wechsel', subtitle: 'Crew-Betrieb',
     info: ['Besatzungsmitglieder tauschen Kabinen- und Fensterbeobachtungspositionen.',
@@ -1196,19 +2047,7 @@ let rightTab       = 'targets';
 let geoSubtab      = 'geo-traj';
 let moonCanvas, moonCtx, geoCanvas, geoCtx;
 
-// ─── CLOCK ────────────────────────────────────────────────────────────────────
-function updateClock() {
-  const n = new Date();
-  // MESZ = UTC+2
-  const mesz = new Date(n.getTime() + 2 * 3600000);
-  const t = [mesz.getUTCHours(), mesz.getUTCMinutes(), mesz.getUTCSeconds()]
-    .map(v => String(v).padStart(2,'0')).join(':') + ' MESZ';
-  document.getElementById('liveClock').textContent = t;
-  const d = `${mesz.getUTCDate()} Apr ${mesz.getUTCFullYear()} ${[mesz.getUTCHours(),mesz.getUTCMinutes(),mesz.getUTCSeconds()].map(v=>String(v).padStart(2,'0')).join(':')}.${'000'}`;
-  document.getElementById('mapTimestamp').textContent = d;
-}
-setInterval(updateClock, 1000);
-updateClock();
+// Clock wird im window.onload gestartet (Definition steht weiter unten)
 
 // ─── MOON CANVAS SETUP ───────────────────────────────────────────────────────
 function initCanvases() {
@@ -1510,12 +2349,18 @@ function switchMainTab(tab) {
   mainTab = tab;
   document.getElementById('tab-ltp').classList.toggle('active', tab==='ltp');
   document.getElementById('tab-geo').classList.toggle('active', tab==='geo');
+  document.getElementById('tab-track').classList.toggle('active', tab==='track');
+  document.getElementById('tab-telemetry').classList.toggle('active', tab==='telemetry');
+  document.getElementById('tab-geofull').classList.toggle('active', tab==='geofull');
 
-  const ltpContent = document.getElementById('panel-targets');
-  const geoContent = document.getElementById('panel-geo');
-  // right panel tabs affect inner views inside ltp
+  // Hide all exclusive panels first
+  const allExclusive = ['panel-geo','panel-track','panel-telemetry','panel-geofull'];
+  allExclusive.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+
   if (tab === 'ltp') {
-    document.getElementById('panel-geo').style.display = 'none';
     // restore whichever right tab is active
     switchRightTab(rightTab, true);
   } else {
@@ -1526,14 +2371,54 @@ function switchMainTab(tab) {
       if (id === 'panel-targets') el.style.display = 'none';
       else el.classList.remove('active');
     });
+  }
+
+  if (tab === 'geo') {
     document.getElementById('panel-geo').style.display = 'flex';
     setTimeout(() => { resizeCanvases(); redrawGeo(); }, 50);
   }
-  showToast(tab === 'ltp' ? 'Mondzielplan' : 'Mondgeographie-Überblick');
+
+  if (tab === 'track') {
+    ['panel-overview','panel-timeline','panel-targets','panel-guide','panel-flight'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+    document.getElementById('panel-track').style.display = 'flex';
+    setTimeout(() => { initGroundTrack(); }, 80);
+  }
+
+  if (tab === 'telemetry') {
+    ['panel-overview','panel-timeline','panel-targets','panel-guide','panel-flight'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+    document.getElementById('panel-telemetry').style.display = 'flex';
+    setTimeout(() => { updateTelemPanel(); }, 50);
+  }
+
+  if (tab === 'geofull') {
+    ['panel-overview','panel-timeline','panel-targets','panel-guide','panel-flight'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = 'none';
+    });
+    document.getElementById('panel-geofull').style.display = 'flex';
+    setTimeout(() => { initGeoFull(); }, 80);
+  }
+
+  const toastMap = {ltp:'Mondzielplan', geo:'Mondgeographie-Überblick', track:'Ground-Track',
+                    telemetry:'Telemetrie', geofull:'Geo-Vollbild'};
+  showToast(toastMap[tab] || tab);
 }
 
 // ─── RIGHT TAB ────────────────────────────────────────────────────────────────
 function switchRightTab(tab, silent) {
+  if (tab === 'flight') {
+    document.querySelectorAll('.panel-view, #panel-targets, #panel-flight').forEach(p => p.style.display = 'none');
+    document.getElementById('panel-flight').style.display = 'flex';
+    document.querySelectorAll('.top-right-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('rtab-flight').classList.add('active');
+    rightTab = 'flight';
+    setTimeout(updateFlightCanvas, 50);
+    if (!silent) showToast('Gesamtflug-Ansicht');
+    return;
+  }
   if (mainTab === 'geo') return; // geo-view handles its own content
   rightTab = tab;
   ['overview','timeline','targets','guide'].forEach(t => {
@@ -1694,7 +2579,8 @@ function showMoreViews() {
       <li style="margin-bottom:8px"><strong>Topographie-Karte</strong> — LOLA Höhendaten</li>
       <li style="margin-bottom:8px"><strong>Rückseitenansicht</strong> — Dediziertes Rückseiten-Targeting</li>
     </ul>
-    <p style="margin-top:10px;color:var(--text-dim);font-size:10px;">Diese Ansichten sind in der vollständigen LTP-Anwendung an Bord von Orion verfügbar.</p>`);
+    <p style="margin-top:10px;color:#4dd0e1;font-size:10px;">Tipp: <strong>Telemetrie</strong> und <strong>Geo-Vollbild</strong> sind jetzt als eigene Tabs verfügbar.</p>
+    <p style="margin-top:4px;color:var(--text-dim);font-size:10px;">Diese Ansichten sind in der vollständigen LTP-Anwendung an Bord von Orion verfügbar.</p>`);
 }
 
 // ─── WORKFLOW STEPS ───────────────────────────────────────────────────────────
@@ -1827,6 +2713,9 @@ function initTimeline() {
 window.addEventListener('load', () => {
   initCanvases();
   initTimeline();
+  initFlightCanvas();
+  updateDetailPhoto('12-orientale');
+  // (Clock läuft via zweitem Script-Block)
   // Default: targets tab
   document.getElementById('panel-targets').style.display = 'flex';
 
@@ -1841,6 +2730,1105 @@ window.addEventListener('load', () => {
   const img = document.getElementById('moonImg');
   if (img.complete && img.naturalWidth > 0) onMoonLoad();
 });
+
+// ═══════════════════════════════════════════════════════
+// ERWEITERTE FUNKTIONEN: Zeitreise, Fotos, Gesamtflug, Impressum, Ground-Track
+// ═══════════════════════════════════════════════════════
+
+// ── Zeitstatus ──
+let timeOffset = 0; // ms-Offset zur echten Zeit (0 = live)
+let tmOpen = false;
+
+function getDisplayTime() {
+  return new Date(Date.now() + timeOffset + 2 * 3600000); // MESZ = UTC+2
+}
+
+// ── CLOCK ──
+function updateClock() {
+  const mesz = getDisplayTime();
+  const t = [mesz.getUTCHours(), mesz.getUTCMinutes(), mesz.getUTCSeconds()]
+    .map(v => String(v).padStart(2,'0')).join(':') + ' MESZ';
+  const el = document.getElementById('liveClock');
+  if (el) el.textContent = t;
+  const d = mesz.getUTCDate() + ' Apr ' + mesz.getUTCFullYear() + ' ' +
+    [mesz.getUTCHours(),mesz.getUTCMinutes(),mesz.getUTCSeconds()].map(v=>String(v).padStart(2,'0')).join(':') + '.000';
+  const ts = document.getElementById('mapTimestamp');
+  if (ts) ts.textContent = d;
+  updateProgress(mesz);
+  if (typeof updateTelemPanel === 'function' && mainTab === 'telemetry') updateTelemPanel();
+}
+
+function updateProgress(mesz) {
+  const fill = document.getElementById('progFill');
+  const pct  = document.getElementById('progPct');
+  if (!fill || !pct) return;
+  const start = Date.UTC(2026,3,6,20,45,0);
+  const end   = Date.UTC(2026,3,7, 1,20,0);
+  const now   = mesz.getTime() - 2*3600000;
+  const p = Math.max(0, Math.min(100, (now - start) / (end - start) * 100));
+  fill.style.width = p.toFixed(1) + '%';
+  pct.textContent = p.toFixed(0) + ' % abgeschlossen';
+}
+
+// ── ZEITREISE ──
+function toggleTimeMachine() {
+  tmOpen = !tmOpen;
+  const bar = document.getElementById('timeMachineBar');
+  if (bar) bar.classList.toggle('open', tmOpen);
+  if (tmOpen) {
+    const mesz = getDisplayTime();
+    const inp = document.getElementById('tmInput');
+    if (inp) {
+      inp.value = String(mesz.getUTCHours()).padStart(2,'0') + ':' + String(mesz.getUTCMinutes()).padStart(2,'0');
+      inp.focus();
+    }
+  }
+}
+
+function closeTimeMachine() {
+  tmOpen = false;
+  const bar = document.getElementById('timeMachineBar');
+  if (bar) bar.classList.remove('open');
+}
+
+function applyTimeMachine() {
+  const val = (document.getElementById('tmInput') || {}).value || '';
+  const m = val.trim().match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) { showToast('Format: HH:MM (z.B. 23:02)'); return; }
+  const h = parseInt(m[1]), min = parseInt(m[2]);
+  if (h > 23 || min > 59) { showToast('Ungültige Uhrzeit'); return; }
+  const day = (h >= 20) ? 6 : 7;
+  const targetUTC = Date.UTC(2026, 3, day, h - 2, min, 0);
+  timeOffset = targetUTC - Date.now();
+  const badge = document.getElementById('timeTravelBadge');
+  if (badge) badge.classList.add('active');
+  closeTimeMachine();
+  updateClock();
+  if (typeof updateFlightCanvas === 'function') updateFlightCanvas();
+  showToast('Zeitreise: ' + String(h).padStart(2,'0') + ':' + String(min).padStart(2,'0') + ' MESZ am ' + day + '. Apr 2026');
+}
+
+function returnToLive() {
+  timeOffset = 0;
+  const badge = document.getElementById('timeTravelBadge');
+  if (badge) badge.classList.remove('active');
+  closeTimeMachine();
+  updateClock();
+  if (typeof updateFlightCanvas === 'function') updateFlightCanvas();
+  showToast('● Zurück zur Live-Anzeige');
+}
+
+// ── FOTO IM DETAIL-PANEL ──
+function updateDetailPhoto(targetId) {
+  if (typeof TARGETS === 'undefined') return;
+  const d = TARGETS[targetId];
+  const photoDiv = document.getElementById('detPhoto');
+  const photoImg = document.getElementById('detPhotoImg');
+  const photoCredit = document.getElementById('detPhotoCredit');
+  if (!d || !photoDiv) return;
+  const imgUrl = d.img || '';
+  if (imgUrl) {
+    photoDiv.style.display = 'block';
+    photoImg.classList.remove('loaded');
+    photoImg.style.display = 'block';
+    photoImg.src = imgUrl;
+    photoImg.alt = d.title;
+    if (photoCredit) photoCredit.textContent = d.imgCredit || 'NASA Public Domain';
+  } else {
+    photoDiv.style.display = 'none';
+  }
+}
+
+// ── IMPRESSUM ──
+let _imprintAccepted = false;
+function acceptImprint() {
+  _imprintAccepted = true;
+  const ov = document.getElementById('imprintOverlay');
+  if (ov) ov.style.display = 'none';
+}
+// Overlay standardmäßig sichtbar (kein persistenter Speicher in Preview)
+
+// ── GESAMTFLUG ──
+function initFlightCanvas() {
+  const canvas = document.getElementById('flightCanvas');
+  if (!canvas) return;
+  const resize = () => {
+    canvas.width  = canvas.parentElement.clientWidth || 800;
+    canvas.height = Math.max(200, (canvas.parentElement.clientHeight || 400) - 80);
+    updateFlightCanvas();
+  };
+  resize();
+  window.addEventListener('resize', resize);
+}
+
+function updateFlightCanvas() {
+  const canvas = document.getElementById('flightCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  if (W < 10 || H < 10) return;
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = '#00050f'; ctx.fillRect(0,0,W,H);
+
+  // Sterne
+  const rng = (s) => { let x = Math.sin(s)*10000; return x - Math.floor(x); };
+  for (let i=0; i<180; i++) {
+    const a = 0.2 + rng(i*13)*0.6;
+    ctx.fillStyle = `rgba(255,255,255,${a})`;
+    ctx.beginPath(); ctx.arc(rng(i*3)*W, rng(i*7)*H, rng(i*11)*1.5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // Erde
+  const EX=W*0.12, EY=H*0.50, ER=Math.min(W,H)*0.10;
+  const eg = ctx.createRadialGradient(EX,EY,0,EX,EY,ER);
+  eg.addColorStop(0,'#1d4ed8'); eg.addColorStop(1,'#1e3a8a');
+  ctx.fillStyle=eg; ctx.beginPath(); ctx.arc(EX,EY,ER,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle='rgba(96,165,250,0.3)'; ctx.lineWidth=3;
+  ctx.beginPath(); ctx.arc(EX,EY,ER+4,0,Math.PI*2); ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.font='bold 10px Arial'; ctx.textAlign='center';
+  ctx.fillText('ERDE', EX, EY+ER+14);
+
+  // Mond
+  const MX=W*0.82, MY=H*0.38, MR=Math.min(W,H)*0.065;
+  const mg = ctx.createRadialGradient(MX-MR*0.3,MY-MR*0.3,0,MX,MY,MR);
+  mg.addColorStop(0,'#cbd5e1'); mg.addColorStop(1,'#475569');
+  ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(MX,MY,MR,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.8)'; ctx.font='bold 10px Arial'; ctx.textAlign='center';
+  ctx.fillText('MOND', MX, MY+MR+14);
+
+  const LAUNCH  = Date.UTC(2026,3,1,22,24,0);
+  const SPLASHD = Date.UTC(2026,3,9,22, 0,0);
+  const FLYBY   = Date.UTC(2026,3,6,20,45,0);
+  const PERICYN = Date.UTC(2026,3,6,21, 2,0);
+  const MISS_D  = SPLASHD - LAUNCH;
+
+  // Trajektorie
+  const pts = [];
+  for (let i=0; i<=200; i++) {
+    const t = i/200;
+    if (t < 0.5) {
+      const t2=t/0.5;
+      pts.push({ x: EX+(MX-EX)*t2, y: EY+(MY-EY)*t2 - Math.sin(t2*Math.PI)*H*0.28, t });
+    } else {
+      const t2=(t-0.5)/0.5;
+      pts.push({ x: MX+(EX-MX)*t2, y: MY+(EY-MY)*t2 + Math.sin(t2*Math.PI)*H*0.22, t });
+    }
+  }
+
+  ctx.strokeStyle='rgba(74,222,128,0.12)'; ctx.lineWidth=1.5; ctx.setLineDash([3,4]);
+  ctx.beginPath(); pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  const nowUTC = Date.now() + timeOffset;
+  const mT = Math.max(0,Math.min(1,(nowUTC-LAUNCH)/MISS_D));
+  const passedPts = pts.filter(p=>p.t<=mT);
+  if (passedPts.length>1) {
+    ctx.strokeStyle='#4ade80'; ctx.lineWidth=2.5;
+    ctx.beginPath(); passedPts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y)); ctx.stroke();
+  }
+
+  // Orion
+  const ci = Math.min(pts.length-1, Math.floor(mT*pts.length));
+  const cp = pts[ci]||{x:EX,y:EY};
+  ctx.fillStyle='#ef4444'; ctx.shadowColor='#f87171'; ctx.shadowBlur=12;
+  ctx.beginPath(); ctx.arc(cp.x,cp.y,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fde68a'; ctx.font='bold 8px Arial'; ctx.shadowBlur=0; ctx.textAlign='center';
+  ctx.fillText('ORION', cp.x, cp.y-10);
+
+  // Events
+  [{utc:LAUNCH,label:'🚀 Start\n1. Apr',t:0},{utc:FLYBY,label:'🌕 Vorbeiflug\n6. Apr',t:0.48},
+   {utc:PERICYN,label:'⭐ Pericynthion',t:0.49},{utc:SPLASHD,label:'🌊 Wasserung\n10. Apr',t:1}
+  ].forEach(ev=>{
+    const ep=pts[Math.min(pts.length-1,Math.floor(ev.t*pts.length))];
+    const past=nowUTC>=ev.utc;
+    ctx.fillStyle=past?'#fbbf24':'rgba(251,191,36,0.3)';
+    ctx.beginPath(); ctx.arc(ep.x,ep.y,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=past?'#fde68a':'rgba(253,230,138,0.4)';
+    ctx.font='8px Arial'; ctx.textAlign='center';
+    ev.label.split('\n').forEach((l,i,a)=>ctx.fillText(l,ep.x,ep.y-12-(a.length-1-i)*10));
+  });
+
+  // MET
+  const metMs=Math.max(0,nowUTC-LAUNCH);
+  const metD=Math.floor(metMs/86400000), metH=Math.floor((metMs%86400000)/3600000), metM=Math.floor((metMs%3600000)/60000);
+  ctx.fillStyle='rgba(0,5,15,0.7)'; ctx.strokeStyle='rgba(59,130,246,0.4)'; ctx.lineWidth=1;
+  const mx=W*0.5-70, my=H-38;
+  ctx.beginPath(); ctx.roundRect(mx,my,140,32,4); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#93c5fd'; ctx.font='9px "Courier New"'; ctx.textAlign='center';
+  ctx.fillText('MET: '+metD+'d '+String(metH).padStart(2,'0')+'h '+String(metM).padStart(2,'0')+'m', mx+70, my+12);
+  ctx.fillStyle='#4dd0e1'; ctx.font='bold 10px "Courier New"';
+  ctx.fillText('Artemis II · April 2026', mx+70, my+25);
+}
+
+
+// ─── TELEMETRIE ────────────────────────────────────────────────────────────────
+const TELEM_LAUNCH   = new Date('2026-03-31T22:24:00Z'); // Launch UTC
+const TELEM_PERI     = new Date('2026-04-07T21:02:00Z'); // Pericynthion UTC
+const TELEM_FLYBY_START = new Date('2026-04-06T20:45:00Z');
+const TELEM_FLYBY_END   = new Date('2026-04-07T01:20:00Z');
+
+function telemNow() {
+  // Respects timeOffset from Zeitreise
+  return new Date(Date.now() + timeOffset);
+}
+
+function fmtMET(ms) {
+  const neg = ms < 0;
+  const abs = Math.abs(ms);
+  const d = Math.floor(abs / 86400000);
+  const h = Math.floor((abs % 86400000) / 3600000);
+  const m = Math.floor((abs % 3600000) / 60000);
+  const s = Math.floor((abs % 60000) / 1000);
+  return (neg ? '-' : '') + d + '/' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function fmtSignedHMS(ms) {
+  const neg = ms < 0;
+  const abs = Math.abs(ms);
+  const h = Math.floor(abs / 3600000);
+  const m = Math.floor((abs % 3600000) / 60000);
+  const s = Math.floor((abs % 60000) / 1000);
+  return (neg ? '-' : '+') + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+
+function calcMoonAltitude(nowUTC) {
+  // Simplified: Orion approaches Moon, closest at pericynthion ~7400km, from ~400000km far
+  const msFromFlybyStart = nowUTC - TELEM_FLYBY_START;
+  const msFromPeri = nowUTC - TELEM_PERI;
+  const flybyDuration = TELEM_FLYBY_END - TELEM_FLYBY_START; // ~4.6h
+  
+  if (nowUTC < TELEM_FLYBY_START) {
+    // Approaching: linear from ~400000 km down to 7400 km
+    const approach = TELEM_FLYBY_START - new Date('2026-04-05T00:00:00Z');
+    const remaining = TELEM_FLYBY_START - nowUTC;
+    const totalApproach = 26 * 3600000; // ~26h approach
+    const frac = Math.max(0, Math.min(1, remaining / totalApproach));
+    return Math.round(7400 + frac * 180000);
+  } else if (nowUTC > TELEM_FLYBY_END) {
+    // Receding: back to ~400000 km
+    const elapsed = nowUTC - TELEM_FLYBY_END;
+    const totalRecede = 30 * 3600000;
+    const frac = Math.min(1, elapsed / totalRecede);
+    return Math.round(7400 + frac * 180000);
+  } else {
+    // During flyby: sinusoidal approach/departure
+    const half = (TELEM_FLYBY_END - TELEM_FLYBY_START) / 2;
+    const t = nowUTC - TELEM_FLYBY_START;
+    const normalized = (t - half) / half; // -1..+1
+    // pericynthion at center
+    const alt = 7400 + 18000 * (normalized * normalized);
+    return Math.round(alt);
+  }
+}
+
+function calcPixelScale(altKm) {
+  // 400mm focal length camera on ~35mm sensor, Moon ~3474km diameter
+  // Field of view: 2*atan(17.5/400) ≈ 5°; pixel scale ≈ alt * tan(FOV/2) / (resolution/2)
+  // Simplified: scale_m = alt_km * 1000 * 0.0875 / 1024 ≈ alt * 0.085
+  return Math.round(altKm * 0.085);
+}
+
+function calcIlluminatedFraction(nowUTC) {
+  // Moon phase: At reference (Apr 6 19:02 UTC) illuminated fraction was ~83.8%
+  // Full moon ~Apr 13; new moon ~Mar 29 (last)
+  // Use sinusoidal approximation
+  const fullMoon = new Date('2026-04-13T00:00:00Z');
+  const lunarPeriod = 29.53 * 86400000;
+  const msFromFull = nowUTC - fullMoon;
+  const phase = (msFromFull % lunarPeriod + lunarPeriod) % lunarPeriod;
+  const angle = (phase / lunarPeriod) * 2 * Math.PI;
+  const illum = (1 - Math.cos(angle)) / 2;
+  return (illum * 100).toFixed(1);
+}
+
+function calcSubsolarPoint(nowUTC) {
+  // Subsolar longitude drifts ~1°/hour east
+  // Reference: Apr 6 19:02 UTC → 1.03°N 53.12°W
+  const REF = new Date('2026-04-06T19:02:00Z');
+  const dtHours = (nowUTC - REF) / 3600000;
+  const refLon = -53.12; // W = negative
+  const lon = refLon + dtHours * 0.9856; // ~0.99°/h apparent Sun motion
+  const normLon = ((lon + 180) % 360 + 360) % 360 - 180;
+  return { lat: 1.03, lon: normLon };
+}
+
+function calcSubSpacecraftPoint(nowUTC) {
+  // Sub-spacecraft moves along orbit track
+  // At pericynthion: ~1.95°N, 101°W (near far side)
+  // Approaching from east, leaving to west
+  const msFromPeri = nowUTC - TELEM_PERI;
+  const hourFromPeri = msFromPeri / 3600000;
+  const baseLon = -101.0; // at pericynthion
+  const lon = baseLon + hourFromPeri * 8.5; // ~8.5°/h orbital motion
+  const normLon = ((lon + 180) % 360 + 360) % 360 - 180;
+  const lat = 1.95 + Math.sin(hourFromPeri * 0.3) * 2.1;
+  return { lat: lat, lon: normLon };
+}
+
+function fmtCoord(lat, lon) {
+  const latStr = Math.abs(lat).toFixed(2) + '°' + (lat >= 0 ? 'N' : 'S');
+  const lonStr = Math.abs(lon).toFixed(2) + '°' + (lon >= 0 ? 'E' : 'W');
+  return latStr + ' ' + lonStr;
+}
+
+function fmtUTCDate(d) {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return String(d.getUTCDate()).padStart(2,'0') + ' ' + months[d.getUTCMonth()] + ' ' + d.getUTCFullYear()
+       + ' ' + String(d.getUTCHours()).padStart(2,'0') + ':' + String(d.getUTCMinutes()).padStart(2,'0') + ':' + String(d.getUTCSeconds()).padStart(2,'0');
+}
+
+function updateTelemPanel() {
+  const now = telemNow();
+  const nowUTC = now; // telemNow() is already UTC-adjusted
+
+  // UTC TIME
+  const utcEl = document.getElementById('telem-utc');
+  if (utcEl) utcEl.textContent = fmtUTCDate(nowUTC);
+
+  // MET
+  const metEl = document.getElementById('telem-met');
+  if (metEl) metEl.textContent = fmtMET(nowUTC - TELEM_LAUNCH);
+
+  // PERICYNTHION countdown
+  const periEl = document.getElementById('telem-peri');
+  if (periEl) periEl.textContent = fmtSignedHMS(TELEM_PERI - nowUTC);
+
+  // MOON ALTITUDE
+  const altKm = calcMoonAltitude(nowUTC);
+  const altEl = document.getElementById('telem-alt');
+  if (altEl) altEl.innerHTML = altKm.toLocaleString('de-DE') + ' km';
+  
+  // EARTH ALTITUDE (Moon to Earth, ~384400 km average)
+  const earthDistKm = 384400 - Math.round((altKm - 7400) * 0.02);
+  const altEarthEl = document.getElementById('telem-alt-earth');
+  if (altEarthEl) altEarthEl.textContent = '(' + earthDistKm.toLocaleString('de-DE') + ' km)';
+
+  // PIXEL SCALE
+  const pixEl = document.getElementById('telem-pixel');
+  if (pixEl) pixEl.textContent = calcPixelScale(altKm).toLocaleString('de-DE') + ' m';
+
+  // ILLUMINATED
+  const illEl = document.getElementById('telem-illum');
+  if (illEl) illEl.textContent = calcIlluminatedFraction(nowUTC) + '%';
+
+  // SUBSOLAR
+  const ss = calcSubsolarPoint(nowUTC);
+  const ssEl = document.getElementById('telem-subsolar');
+  if (ssEl) ssEl.textContent = fmtCoord(ss.lat, ss.lon);
+
+  // SUB-SPACECRAFT
+  const sc = calcSubSpacecraftPoint(nowUTC);
+  const scEl = document.getElementById('telem-subsc');
+  if (scEl) scEl.textContent = fmtCoord(sc.lat, sc.lon);
+}
+
+// ─── GEO-VOLLBILD ─────────────────────────────────────────────────────────────
+let geoFullInitialized = false;
+
+function initGeoFull() {
+  const canvas = document.getElementById('geofullCanvas');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  drawGeoFull();
+  geoFullInitialized = true;
+}
+
+function drawGeoFull() {
+  const canvas = document.getElementById('geofullCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Calculate moon circle position (matches the img object-contain)
+  const img = document.getElementById('geofullImg');
+  let moonCx = W/2, moonCy = H/2, moonR = Math.min(W,H)*0.45;
+
+  // If image loaded, compute actual displayed size
+  if (img && img.naturalWidth > 0) {
+    const imgAR = img.naturalWidth / img.naturalHeight;
+    const boxAR = W / H;
+    let dispW, dispH;
+    if (imgAR > boxAR) { dispW = W; dispH = W / imgAR; }
+    else { dispH = H; dispW = H * imgAR; }
+    // Moon is roughly 85% of image dimension
+    moonR = Math.min(dispW, dispH) * 0.43;
+    moonCx = W/2; moonCy = H/2;
+  }
+
+  // Helper: convert lat/lon on moon sphere to canvas pixel (simple orthographic projection)
+  // Sub-spacecraft point from telemetry
+  const now = telemNow();
+  const sc = calcSubSpacecraftPoint(now);
+  const centerLon = sc.lon; // center of visible face
+  const centerLat = sc.lat;
+
+  function moonToCanvas(lat, lon) {
+    const dLat = (lat - centerLat) * Math.PI/180;
+    const dLon = (lon - centerLon) * Math.PI/180;
+    // Orthographic: x = cos(lat)*sin(dLon), y = sin(lat)
+    const latR = lat * Math.PI/180;
+    const lonR = lon * Math.PI/180;
+    const cLat = centerLat * Math.PI/180;
+    const cLon = centerLon * Math.PI/180;
+    const x = Math.cos(latR) * Math.sin(lonR - cLon);
+    const y = Math.sin(latR)*Math.cos(cLat) - Math.cos(latR)*Math.sin(cLat)*Math.cos(lonR-cLon);
+    const dot = Math.sin(cLat)*Math.sin(latR) + Math.cos(cLat)*Math.cos(latR)*Math.cos(lonR-cLon);
+    return { px: moonCx + x * moonR, py: moonCy - y * moonR, visible: dot > 0 };
+  }
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.75)';
+  ctx.lineWidth = 1.5;
+  ctx.font = '11px "Courier New", monospace';
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+
+  // ── Draw terminator shadow (night side)
+  const subsolar = calcSubsolarPoint(now);
+  // Approximate: night side is left of terminator
+  const termAngle = ((subsolar.lon - centerLon) + 360) % 360;
+  // Draw dark overlay for night side
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(moonCx, moonCy, moonR * 1.005, 0, 2*Math.PI);
+  ctx.clip();
+  // Night hemisphere: the side away from subsolar point
+  const nightX = moonCx - Math.cos((subsolar.lon)*Math.PI/180) * moonR * 0.15;
+  const grad = ctx.createRadialGradient(
+    moonCx - Math.cos((centerLon - subsolar.lon)*Math.PI/180)*moonR*0.7,
+    moonCy,
+    moonR * 0.1,
+    moonCx - Math.cos((centerLon - subsolar.lon)*Math.PI/180)*moonR*0.7,
+    moonCy,
+    moonR * 0.9
+  );
+  // Determine if left or right is in shadow
+  const sunDir = ((subsolar.lon - centerLon) + 540) % 360 - 180; // -180..+180
+  if (sunDir < 0) {
+    // Sun is to the left, shadow on right
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(moonCx, moonCy - moonR, moonR, moonR * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fill();
+    ctx.restore();
+  } else {
+    // Shadow on left
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(moonCx - moonR, moonCy - moonR, moonR, moonR * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // ── Draw lat/lon grid (every 30°)
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 0.8;
+  for (let lat = -90; lat <= 90; lat += 30) {
+    ctx.beginPath();
+    let first = true;
+    for (let lon = centerLon - 90; lon <= centerLon + 90; lon += 2) {
+      const p = moonToCanvas(lat, lon);
+      if (!p.visible) { first = true; continue; }
+      if (first) { ctx.moveTo(p.px, p.py); first = false; }
+      else ctx.lineTo(p.px, p.py);
+    }
+    ctx.stroke();
+  }
+  for (let lon = centerLon - 90; lon <= centerLon + 90; lon += 30) {
+    ctx.beginPath();
+    let first = true;
+    for (let lat = -90; lat <= 90; lat += 2) {
+      const p = moonToCanvas(lat, lon);
+      if (!p.visible) { first = true; continue; }
+      if (first) { ctx.moveTo(p.px, p.py); first = false; }
+      else ctx.lineTo(p.px, p.py);
+    }
+    ctx.stroke();
+  }
+
+  // ── Orientale Basin concentric rings
+  // Mare Orientale: ~19.4°S, 92.8°W
+  const orientaleLat = -19.4, orientaleLon = -92.8;
+  const ringRadii = [150, 310, 480]; // km, converted to degrees ~1°/111km on moon sphere ~1°/30km
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1.8;
+  for (const rKm of ringRadii) {
+    const rDeg = rKm / 30; // rough deg on moon
+    ctx.beginPath();
+    let firstRing = true;
+    for (let a = 0; a <= 360; a += 3) {
+      const rad = a * Math.PI/180;
+      const pLat = orientaleLat + rDeg * Math.cos(rad);
+      const pLon = orientaleLon + rDeg / Math.cos(orientaleLat * Math.PI/180) * Math.sin(rad);
+      const p = moonToCanvas(pLat, pLon);
+      if (!p.visible) { firstRing = true; continue; }
+      if (firstRing) { ctx.moveTo(p.px, p.py); firstRing = false; }
+      else ctx.lineTo(p.px, p.py);
+    }
+    ctx.stroke();
+  }
+
+  // ── Target overlays (from TARGETS data)
+  const targets = [
+    { id:'aristarchus', lat:23.7, lon:-47.4, type:'crater', label:'Aristarchus' },
+    { id:'vallis',      lat:24.5, lon:-51.0, type:'region',  label:'Vallis Schröteri' },
+    { id:'reiner',      lat:7.0,  lon:-58.8, type:'crater',  label:'Reiner Gamma' },
+    { id:'marius',      lat:12.0, lon:-51.0, type:'region',  label:'M. Hills' },
+    { id:'oceanus',     lat:3.0,  lon:-57.0, type:'region',  label:'Oceanus Procellarum' },
+    { id:'grimaldi',    lat:-5.5, lon:-68.3, type:'basin',   label:'Grimaldi' },
+    { id:'orientale',   lat:-19.4,lon:-92.8, type:'basin',   label:'Mare Orientale' },
+    { id:'schiller',    lat:-51.8,lon:-39.0, type:'crater',  label:'Schiller-Zucchius' },
+    { id:'darwin',      lat:-20.1,lon:-69.5, type:'crater',  label:'Darwin' },
+    { id:'sirsalis',    lat:-12.5,lon:-60.4, type:'region',  label:'Sirsalis Rille' },
+    { id:'lacus-vel',   lat:13.0, lon:-43.0, type:'basin',   label:'Lacus Veris' },
+    { id:'herodo',      lat:23.0, lon:-49.7, type:'crater',  label:'Herodotus' },
+  ];
+
+  targets.forEach(t => {
+    const p = moonToCanvas(t.lat, t.lon);
+    if (!p.visible) return;
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.82)';
+    ctx.lineWidth = 1.6;
+    ctx.fillStyle = 'rgba(255,255,255,0)';
+
+    if (t.type === 'crater') {
+      // Circle
+      const r = 14;
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, r, 0, 2*Math.PI);
+      ctx.stroke();
+      // Small dot center
+      ctx.beginPath();
+      ctx.arc(p.px, p.py, 2, 0, 2*Math.PI);
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.fill();
+    } else if (t.type === 'basin') {
+      // Diamond
+      const s = 14;
+      ctx.beginPath();
+      ctx.moveTo(p.px, p.py - s);
+      ctx.lineTo(p.px + s, p.py);
+      ctx.lineTo(p.px, p.py + s);
+      ctx.lineTo(p.px - s, p.py);
+      ctx.closePath();
+      ctx.stroke();
+    } else {
+      // Rectangle for regions
+      const w = 22, h = 14;
+      ctx.strokeRect(p.px - w/2, p.py - h/2, w, h);
+    }
+
+    // Label
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.font = '10px "Courier New", monospace';
+    // Drop shadow for readability
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = 4;
+    ctx.fillText(t.label, p.px + 17, p.py + 4);
+    ctx.shadowBlur = 0;
+  });
+
+  // ── Sub-spacecraft crosshair
+  const scPt = moonToCanvas(sc.lat, sc.lon);
+  if (scPt.visible) {
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(scPt.px - 12, scPt.py); ctx.lineTo(scPt.px + 12, scPt.py);
+    ctx.moveTo(scPt.px, scPt.py - 12); ctx.lineTo(scPt.px, scPt.py + 12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(scPt.px, scPt.py, 6, 0, 2*Math.PI);
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Label
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 10px "Courier New", monospace';
+    ctx.shadowColor = 'rgba(0,0,0,0.9)';
+    ctx.shadowBlur = 4;
+    ctx.fillText('Orion', scPt.px + 10, scPt.py - 10);
+    ctx.shadowBlur = 0;
+  }
+}
+
+// Kick off Geo-Vollbild animation
+function geofullLoop() {
+  if (mainTab === 'geofull') {
+    const canvas = document.getElementById('geofullCanvas');
+    if (canvas) {
+      if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      }
+      drawGeoFull();
+    }
+  }
+  requestAnimationFrame(geofullLoop);
+}
+geofullLoop();
+
+// Uhr starten
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════════════════
+// GROUND-TRACK CANVAS
+// ═══════════════════════════════════════════════════════
+
+const GT_FLYBY_START  = Date.UTC(2026,3,6,20,45);
+const GT_FLYBY_END    = Date.UTC(2026,3,7, 1,20);
+
+const GT_SCHEDULE = [
+  { num:'1',  name:'Disc. #1: Warm up',              utc:Date.UTC(2026,3,6,20,45), dur:5*60, type:'disc' },
+  { num:'2',  name:'Disc. #2: Near/Farside',          utc:Date.UTC(2026,3,6,20,50), dur:8*60, type:'disc' },
+  { num:'3',  name:'Crater Duo: Glushko (1/2)',        utc:Date.UTC(2026,3,6,20,58), dur:7*60, type:'sci' },
+  { num:'4',  name:'Crater Duo: Ohm',                 utc:Date.UTC(2026,3,6,21, 5), dur:5*60, type:'sci' },
+  { num:'a',  name:'Crew Position Swap',               utc:Date.UTC(2026,3,6,21,10), dur:5*60, type:'crew' },
+  { num:'5',  name:'Aristarchus Plateau',              utc:Date.UTC(2026,3,6,21,15), dur:8*60, type:'sci' },
+  { num:'6',  name:'Reiner Gamma',                    utc:Date.UTC(2026,3,6,21,23), dur:7*60, type:'sci' },
+  { num:'b',  name:'Cabin & Window Teams Swap',        utc:Date.UTC(2026,3,6,21,30), dur:5*60, type:'crew' },
+  { num:'7',  name:'Whole Moon',                       utc:Date.UTC(2026,3,6,21,35), dur:8*60, type:'sci' },
+  { num:'8',  name:'Orientale Basin (1/2)',            utc:Date.UTC(2026,3,6,21,43), dur:9*60, type:'sci' },
+  { num:'c',  name:'Crew Position Swap',               utc:Date.UTC(2026,3,6,21,52), dur:5*60, type:'crew' },
+  { num:'9',  name:'Crew Choice #1',                   utc:Date.UTC(2026,3,6,21,57), dur:8*60, type:'crew' },
+  { num:'10', name:'Disc. #3: Farside Albedo/Color',   utc:Date.UTC(2026,3,6,22, 5), dur:8*60, type:'disc' },
+  { num:'d',  name:'Cabin & Window Teams Swap',        utc:Date.UTC(2026,3,6,22,13), dur:5*60, type:'crew' },
+  { num:'11', name:'Glushko Crater (2/2)',              utc:Date.UTC(2026,3,6,22,18), dur:8*60, type:'sci' },
+  { num:'12', name:'Orientale Basin (2/2)',             utc:Date.UTC(2026,3,6,22,26), dur:9*60, type:'sci' },
+  { num:'13', name:'Hertzsprung Basin',                utc:Date.UTC(2026,3,6,22,35), dur:8*60, type:'sci' },
+  { num:'e',  name:'Window Team Position Swap',        utc:Date.UTC(2026,3,6,22,43), dur:5*60, type:'crew' },
+  { num:'14', name:'Crew Choice #2',                   utc:Date.UTC(2026,3,6,22,48), dur:8*60, type:'crew' },
+  { num:'15', name:'Disc. #5: Terminator',             utc:Date.UTC(2026,3,6,23, 0), dur:6*60, type:'disc' },
+  { num:'f',  name:'Cabin & Window Teams Swap',        utc:Date.UTC(2026,3,6,23, 6), dur:5*60, type:'crew' },
+  { num:'16', name:'Ohm Crater (2/2)',                  utc:Date.UTC(2026,3,6,23,11), dur:8*60, type:'sci' },
+  { num:'17', name:'Disc. #5: Limb',                   utc:Date.UTC(2026,3,6,23,19), dur:6*60, type:'disc' },
+  { num:'18', name:'Earthset',                         utc:Date.UTC(2026,3,6,23,25), dur:8*60, type:'sci' },
+  { num:'19', name:'Vavilov Crater',                   utc:Date.UTC(2026,3,6,23,33), dur:7*60, type:'sci' },
+  { num:'g',  name:'Window Team Position Swap',        utc:Date.UTC(2026,3,6,23,40), dur:5*60, type:'crew' },
+  { num:'20', name:'Crew Choice #3',                   utc:Date.UTC(2026,3,6,23,45), dur:8*60, type:'crew' },
+  { num:'21', name:'Impact Flashes',                   utc:Date.UTC(2026,3,7, 0, 0), dur:8*60, type:'sci' },
+  { num:'22', name:'Lofted Lunar Dust',                utc:Date.UTC(2026,3,7, 0, 8), dur:7*60, type:'sci' },
+  { num:'23', name:'Earthrise',                        utc:Date.UTC(2026,3,7, 0,15), dur:8*60, type:'sci' },
+  { num:'h',  name:'Observation Break',                utc:Date.UTC(2026,3,7, 0,23), dur:5*60, type:'crew' },
+  { num:'24', name:'Sunset',                           utc:Date.UTC(2026,3,7, 0,35), dur:8*60, type:'sci' },
+  { num:'25', name:'Disc. #6: Forward Look',           utc:Date.UTC(2026,3,7, 0,43), dur:7*60, type:'disc' },
+  { num:'26', name:'Eclipse Moon (1/2)',                utc:Date.UTC(2026,3,7, 0,50), dur:8*60, type:'sci' },
+  { num:'i',  name:'Window Team Position Swap',        utc:Date.UTC(2026,3,7, 0,58), dur:5*60, type:'crew' },
+  { num:'27', name:'Deep Space (1/2)',                  utc:Date.UTC(2026,3,7, 1, 3), dur:8*60, type:'sci' },
+  { num:'j',  name:'Window Team Position Swap',        utc:Date.UTC(2026,3,7, 1,11), dur:5*60, type:'crew' },
+  { num:'28', name:'Deep Space (2/2)',                  utc:Date.UTC(2026,3,7, 1,16), dur:8*60, type:'sci' },
+  { num:'29', name:'Eclipsed Moon (2/2)',               utc:Date.UTC(2026,3,7, 1,24), dur:8*60, type:'sci' },
+  { num:'30', name:'Sunrise',                          utc:Date.UTC(2026,3,7, 1,32), dur:8*60, type:'sci' },
+];
+
+const GT_SHIFTS = [
+  { name:'Shift 1: Reid / Jeremy',      start:Date.UTC(2026,3,6,20,45), end:Date.UTC(2026,3,6,21,30), color:'rgba(59,130,246,0.7)' },
+  { name:'Shift 2: Victor / Christina', start:Date.UTC(2026,3,6,21,30), end:Date.UTC(2026,3,6,22,15), color:'rgba(168,85,247,0.7)' },
+  { name:'Shift 3: Reid / Jeremy',      start:Date.UTC(2026,3,6,22,15), end:Date.UTC(2026,3,6,22,50), color:'rgba(59,130,246,0.7)' },
+  { name:'Shift 4: Victor / Christina', start:Date.UTC(2026,3,6,22,50), end:Date.UTC(2026,3,6,23,45), color:'rgba(168,85,247,0.7)' },
+  { name:'Shift 5: Reid / Jeremy',      start:Date.UTC(2026,3,6,23,45), end:Date.UTC(2026,3,7, 1,20), color:'rgba(59,130,246,0.7)' },
+];
+
+const GT_MAP_TARGETS = [
+  { num:'3',  name:'Glushko',           lon:-77, lat: 8,  r:22 },
+  { num:'4',  name:'Ohm',               lon:-114, lat:18,  r:18 },
+  { num:'5',  name:'Aristarchus',       lon:-48, lat: 24, r:35 },
+  { num:'6',  name:'Reiner Gamma',      lon:-59, lat:  7, r:20 },
+  { num:'8',  name:'Orientale Basin',   lon:-95, lat:-19, r:55 },
+  { num:'11', name:'Glushko (2/2)',     lon:-77, lat:  8, r:22 },
+  { num:'12', name:'Orientale (2/2)',   lon:-95, lat:-19, r:55 },
+  { num:'13', name:'Hertzsprung',       lon:-129, lat: 2, r:42 },
+  { num:'16', name:'Ohm (2/2)',         lon:-114, lat:18, r:18 },
+  { num:'19', name:'Vavilov',           lon:-149, lat:-1, r:28 },
+];
+
+const GT_BG_FEATURES = [
+  { name:'Mare Serenitatis',     lon:-18, lat: 28, r:90,  type:'mare' },
+  { name:'Mare Tranquillitatis', lon: 30, lat: 10, r:85,  type:'mare' },
+  { name:'Mare Crisium',         lon: 59, lat: 17, r:50,  type:'mare' },
+  { name:'Mare Smythii',         lon: 87, lat:  2, r:40,  type:'mare' },
+  { name:'Moscoviense Basin',    lon:148, lat: 27, r:60,  type:'basin' },
+  { name:'Jackson Crater',       lon:163, lat: 22, r:20,  type:'crater' },
+  { name:'Apollo Basin',         lon:-152,lat:-37, r:65,  type:'basin' },
+  { name:'Aitken Crater',        lon:174, lat:-17, r:32,  type:'crater' },
+  { name:'Tsiolkovskiy',         lon:129, lat:-21, r:42,  type:'crater' },
+  { name:'Schrodinger Basin',    lon:133, lat:-75, r:65,  type:'basin' },
+  { name:'Aristarchus Plateau',  lon:-48, lat: 24, r:32,  type:'plateau' },
+  { name:'Copernicus',           lon:-20, lat: 10, r:24,  type:'crater' },
+  { name:'Orientale Basin',      lon:-95, lat:-19, r:80,  type:'basin' },
+];
+
+function getOrionLon(utcMs) {
+  const t = (utcMs - GT_FLYBY_START) / (GT_FLYBY_END - GT_FLYBY_START);
+  return 180 - t * 360;
+}
+function getOrionLat(utcMs) {
+  const t = (utcMs - GT_FLYBY_START) / (GT_FLYBY_END - GT_FLYBY_START);
+  return Math.sin(t * Math.PI) * 8;
+}
+
+let gtAnimFrame = null;
+
+function initGroundTrack() {
+  if (gtAnimFrame) { cancelAnimationFrame(gtAnimFrame); gtAnimFrame = null; }
+  const canvas = document.getElementById('gtCanvas');
+  const tlCanvas = document.getElementById('gtTimeline');
+  if (!canvas || !tlCanvas) return;
+  const resize = () => {
+    const mapArea = canvas.parentElement;
+    canvas.width  = mapArea.clientWidth  || 800;
+    canvas.height = mapArea.clientHeight || 400;
+    tlCanvas.width = document.body.clientWidth || 1000;
+  };
+  resize();
+  window.addEventListener('resize', resize);
+  function loop() {
+    drawGroundTrack();
+    drawGTTimeline();
+    updateGTHeader();
+    updateGTList();
+    gtAnimFrame = requestAnimationFrame(loop);
+  }
+  loop();
+}
+
+function gtProject(lon, lat, W, H) {
+  const x = (lon + 180) / 360 * W;
+  const y = H * 0.5 - (Math.max(-75, Math.min(75, lat)) / 75) * (H * 0.46);
+  return { x, y };
+}
+
+function drawGroundTrack() {
+  const canvas = document.getElementById('gtCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  if (W < 10 || H < 10) return;
+  ctx.clearRect(0,0,W,H);
+
+  // Hintergrund mit Terminator
+  const terminatorX = W * 0.28;
+  const grad = ctx.createLinearGradient(0,0,W,0);
+  grad.addColorStop(0, '#030608'); grad.addColorStop(terminatorX/W*0.85, '#0c1422');
+  grad.addColorStop(terminatorX/W, '#141e32'); grad.addColorStop(1, '#1a2438');
+  ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
+
+  // Terminator-Linie
+  ctx.save(); ctx.strokeStyle='rgba(200,200,255,0.2)'; ctx.lineWidth=2; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(terminatorX,0); ctx.bezierCurveTo(terminatorX+25,H*0.25,terminatorX-15,H*0.75,terminatorX+10,H);
+  ctx.stroke(); ctx.restore();
+
+  // Gitter
+  ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.05)'; ctx.lineWidth=0.5;
+  for (let lon=-180; lon<=180; lon+=30) {
+    const {x}=gtProject(lon,0,W,H); ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke();
+    if(lon>-180){ ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.font='8px Arial'; ctx.textAlign='center'; ctx.fillText(lon+'°',x,H-3); }
+  }
+  for (let lat=-60; lat<=60; lat+=30) {
+    const {y}=gtProject(0,lat,W,H); ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();
+    if(lat!==0){ ctx.fillStyle='rgba(255,255,255,0.18)'; ctx.font='8px Arial'; ctx.textAlign='right'; ctx.fillText(lat>0?lat+'°N':Math.abs(lat)+'°S', 26, y+3); }
+  }
+  ctx.restore();
+
+  // Achsen
+  ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.font='8px Arial'; ctx.textAlign='right';
+  ctx.fillText('N.P.',26,gtProject(0,75,W,H).y+3); ctx.fillText('S.P.',26,gtProject(0,-75,W,H).y+3);
+  ctx.fillStyle='rgba(200,220,255,0.5)'; ctx.textAlign='center'; ctx.font='bold 9px Arial';
+  ctx.fillText('Visible Lunar Surface ──────────────────────────────', W*0.72, 14);
+
+  // Mondmerkmale
+  GT_BG_FEATURES.forEach(f => {
+    const {x,y}=gtProject(f.lon,f.lat,W,H);
+    const s=W/1000; const r=Math.max(f.r*s*0.55,8);
+    ctx.save();
+    if(f.type==='basin'){ ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.beginPath(); ctx.arc(x,y,r*0.6,0,Math.PI*2); ctx.stroke();
+    } else if(f.type==='mare'){ ctx.fillStyle='rgba(20,40,90,0.4)';
+      ctx.beginPath(); ctx.ellipse(x,y,r,r*0.75,0,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=0.5; ctx.stroke();
+    } else if(f.type==='crater'){ ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.arc(x,y,Math.max(r*0.45,5),0,Math.PI*2); ctx.stroke();
+    } else if(f.type==='plateau'){ ctx.strokeStyle='rgba(251,191,36,0.45)'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(x,y,Math.max(r*0.45,7),0,Math.PI*2); ctx.stroke();
+    }
+    ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font=`${Math.max(7,Math.min(9,r*0.25))}px Arial`; ctx.textAlign='center';
+    ctx.fillText(f.name, x, y+Math.max(r,8)+10);
+    ctx.restore();
+  });
+
+  // Trajektorie (gestrichelt)
+  const nowUTC = Date.now() + timeOffset;
+  ctx.save(); ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=1.2; ctx.setLineDash([3,4]);
+  ctx.beginPath(); let first=true;
+  for(let dt=0; dt<=GT_FLYBY_END-GT_FLYBY_START; dt+=120000){
+    const {x,y}=gtProject(getOrionLon(GT_FLYBY_START+dt),getOrionLat(GT_FLYBY_START+dt),W,H);
+    if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+
+  // Vergangene Trajektorie
+  ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=2; ctx.setLineDash([]);
+  ctx.beginPath(); first=true;
+  for(let dt=0; dt<=Math.min(nowUTC-GT_FLYBY_START,GT_FLYBY_END-GT_FLYBY_START); dt+=120000){
+    const {x,y}=gtProject(getOrionLon(GT_FLYBY_START+dt),getOrionLat(GT_FLYBY_START+dt),W,H);
+    if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);
+  }
+  ctx.stroke(); ctx.restore();
+
+  // Aktuelle Position
+  const curLon=getOrionLon(nowUTC), curLat=getOrionLat(nowUTC);
+  const {x:cx,y:cy}=gtProject(curLon,curLat,W,H);
+  const altKm=Math.round(7400+Math.abs(Math.sin((nowUTC-GT_FLYBY_START)/(GT_FLYBY_END-GT_FLYBY_START)*Math.PI))*380000);
+  const latStr=(curLat>=0?curLat.toFixed(2)+'°N':Math.abs(curLat).toFixed(2)+'°S');
+  const lonStr=(curLon>=0?curLon.toFixed(2)+'°E':Math.abs(curLon).toFixed(2)+'°W');
+  const el=document.getElementById('gtLat'); if(el) el.textContent=latStr;
+  const el2=document.getElementById('gtLon'); if(el2) el2.textContent=lonStr;
+  const el3=document.getElementById('gtAlt'); if(el3) el3.textContent=altKm.toLocaleString('de-DE');
+
+  // LLA-Tooltip
+  ctx.save();
+  const llaTxt=`LLA (${curLon.toFixed(2)}°, ${curLat.toFixed(2)}°, ${altKm.toLocaleString('de-DE')} km)`;
+  ctx.font='9px "Courier New"';
+  const tw=ctx.measureText(llaTxt).width+14;
+  const bx=Math.min(cx+14,W-tw-4), by=Math.max(cy-26,4);
+  ctx.fillStyle='rgba(0,5,20,0.8)'; ctx.strokeStyle='rgba(77,208,225,0.6)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.roundRect(bx,by,tw,17,3); ctx.fill(); ctx.stroke();
+  ctx.fillStyle='#4dd0e1'; ctx.textAlign='left'; ctx.fillText(llaTxt,bx+7,by+12);
+  ctx.restore();
+
+  // Orion-Symbol
+  ctx.save(); ctx.strokeStyle='#fff'; ctx.lineWidth=2.2; ctx.shadowColor='rgba(255,255,255,0.9)'; ctx.shadowBlur=10;
+  ctx.beginPath(); ctx.arc(cx,cy,7,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-11,cy); ctx.lineTo(cx+11,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-11); ctx.lineTo(cx,cy+11); ctx.stroke();
+  ctx.restore();
+
+  // Ziel-Overlays
+  const activeNum=getCurrentGTNum(nowUTC);
+  GT_MAP_TARGETS.forEach(tgt=>{
+    const {x,y}=gtProject(tgt.lon,tgt.lat,W,H);
+    const s=W/1000; const r=Math.max(tgt.r*s*0.5,10);
+    const isAct=tgt.num===activeNum;
+    ctx.save();
+    ctx.strokeStyle=isAct?'#4ade80':'rgba(255,255,255,0.55)';
+    ctx.lineWidth=isAct?2.5:1.5;
+    if(isAct){ctx.shadowColor='#4ade80';ctx.shadowBlur=12;}
+    ctx.beginPath(); ctx.ellipse(x,y,r,r*0.85,0,0,Math.PI*2); ctx.stroke();
+    ctx.fillStyle=isAct?'#4ade80':'rgba(255,255,255,0.7)';
+    ctx.font=isAct?'bold 9px Arial':'8px Arial'; ctx.textAlign='center'; ctx.shadowBlur=0;
+    ctx.fillText(tgt.name,x,y-r-4);
+    ctx.restore();
+  });
+}
+
+function drawGTTimeline() {
+  const canvas = document.getElementById('gtTimeline');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = 36;
+  canvas.height = H;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#080f20'; ctx.fillRect(0,0,W,H);
+  const totalMs = GT_FLYBY_END - GT_FLYBY_START;
+  const nowUTC = Date.now() + timeOffset;
+
+  GT_SHIFTS.forEach(s=>{
+    const x1=(s.start-GT_FLYBY_START)/totalMs*W;
+    const x2=(s.end-GT_FLYBY_START)/totalMs*W;
+    ctx.fillStyle=s.color; ctx.fillRect(x1,0,x2-x1,H*0.45);
+    ctx.fillStyle='rgba(255,255,255,0.65)'; ctx.font='7px Arial'; ctx.textAlign='left';
+    if(x2-x1>40) ctx.fillText(s.name,x1+3,10);
+  });
+
+  for(let t=GT_FLYBY_START; t<=GT_FLYBY_END; t+=3600000){
+    const x=(t-GT_FLYBY_START)/totalMs*W;
+    ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.fillRect(x,H*0.45,1,H*0.55);
+    const mesz=new Date(t+2*3600000);
+    ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='8px "Courier New"'; ctx.textAlign='center';
+    ctx.fillText(String(mesz.getUTCHours()).padStart(2,'0')+':00',x,H-3);
+  }
+  for(let t=GT_FLYBY_START; t<=GT_FLYBY_END; t+=1800000){
+    const x=(t-GT_FLYBY_START)/totalMs*W;
+    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(x,H*0.45,1,H*0.3);
+  }
+
+  GT_SCHEDULE.forEach(ev=>{
+    if(ev.utc<GT_FLYBY_START||ev.utc>GT_FLYBY_END) return;
+    const x=(ev.utc-GT_FLYBY_START)/totalMs*W;
+    const col=ev.type==='sci'?'rgba(74,222,128,0.65)':ev.type==='crew'?'rgba(168,85,247,0.55)':'rgba(96,165,250,0.55)';
+    ctx.fillStyle=col; ctx.fillRect(x,H*0.45,1.5,H*0.55);
+  });
+
+  // LOS
+  const losT=Date.UTC(2026,3,6,22,45);
+  const losX=(losT-GT_FLYBY_START)/totalMs*W;
+  ctx.fillStyle='rgba(239,68,68,0.75)'; ctx.fillRect(losX,H*0.45,1.5,H*0.55);
+  ctx.fillStyle='rgba(239,68,68,0.8)'; ctx.font='7px Arial'; ctx.textAlign='center'; ctx.fillText('LOS',losX,H-3);
+
+  // Jetzt-Linie
+  const nowX=Math.max(0,Math.min(W,(nowUTC-GT_FLYBY_START)/totalMs*W));
+  ctx.fillStyle='#facc15'; ctx.fillRect(nowX-1,0,2,H);
+  const nm=new Date(nowUTC+2*3600000);
+  ctx.fillStyle='#facc15'; ctx.font='bold 8px "Courier New"';
+  ctx.textAlign=nowX>W*0.85?'right':'left';
+  ctx.fillText(String(nm.getUTCHours()).padStart(2,'0')+':'+String(nm.getUTCMinutes()).padStart(2,'0'),nowX+3,H*0.42);
+}
+
+function fmtHMS(ms) {
+  const abs=Math.abs(ms);
+  return (ms<0?'-':'+')+String(Math.floor(abs/3600000)).padStart(2,'0')+':'+
+    String(Math.floor((abs%3600000)/60000)).padStart(2,'0')+':'+
+    String(Math.floor((abs%60000)/1000)).padStart(2,'0');
+}
+
+function getCurrentGTItem(nowUTC) {
+  let cur=null;
+  for(const ev of GT_SCHEDULE){ if(nowUTC>=ev.utc) cur=ev; else break; }
+  return cur;
+}
+function getCurrentGTNum(nowUTC) { const c=getCurrentGTItem(nowUTC); return c?c.num:null; }
+function getNextGTItem(nowUTC) {
+  for(const ev of GT_SCHEDULE){ if(nowUTC<ev.utc) return ev; }
+  return null;
+}
+
+function updateGTHeader() {
+  const nowUTC=Date.now()+timeOffset;
+  const cur=getCurrentGTItem(nowUTC), nxt=getNextGTItem(nowUTC);
+  const set=(id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
+  set('gt-flyby-el',  fmtHMS(nowUTC-GT_FLYBY_START));
+  set('gt-flyby-rem', fmtHMS(-(GT_FLYBY_END-nowUTC)));
+  if(cur){
+    set('gt-cur-name',    cur.name);
+    set('gt-cur-elapsed', fmtHMS(nowUTC-cur.utc));
+    set('gt-cur-remain',  fmtHMS(-((cur.utc+cur.dur*1000)-nowUTC)));
+    set('gt-tgt-el',  fmtHMS(nowUTC-cur.utc));
+    set('gt-tgt-rem', fmtHMS(-((cur.utc+cur.dur*1000)-nowUTC)));
+    const shift=GT_SHIFTS.find(s=>nowUTC>=s.start&&nowUTC<s.end);
+    if(shift){ set('gt-shift-el',fmtHMS(nowUTC-shift.start)); set('gt-shift-rem',fmtHMS(-(shift.end-nowUTC))); }
+  }
+  if(nxt) set('gt-next-name', nxt.name);
+}
+
+function updateGTList() {
+  const nowUTC=Date.now()+timeOffset;
+  const curNum=getCurrentGTNum(nowUTC);
+  document.querySelectorAll('#gtList .gt-list-item').forEach(el=>{
+    const ev=GT_SCHEDULE.find(e=>e.num===el.dataset.gtnum);
+    el.classList.remove('active','upcoming','past');
+    if(!ev) return;
+    if(el.dataset.gtnum===curNum) el.classList.add('active');
+    else if(nowUTC<ev.utc) el.classList.add('upcoming');
+    else el.classList.add('past');
+  });
+  const act=document.querySelector('#gtList .gt-list-item.active');
+  if(act) act.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+
+function gtSelectItem(el,num) {
+  const ev=GT_SCHEDULE.find(e=>e.num===num);
+  if(!ev) return;
+  timeOffset=ev.utc+30000-Date.now();
+  const badge=document.getElementById('timeTravelBadge'); if(badge) badge.classList.add('active');
+  updateClock();
+  showToast('Zeitreise → '+ev.name);
+}
+
 </script>
+
+
+<!-- ══ IMPRESSUM OVERLAY ══ -->
+<div class="imprint-overlay" id="imprintOverlay">
+  <div class="imprint-box">
+    <div class="imprint-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="48" fill="#0b3d91" stroke="#4a90d9" stroke-width="2"/>
+        <path d="M50 10 C30 10 15 28 15 50 C15 72 30 90 50 90" stroke="#fc3d21" stroke-width="3" fill="none"/>
+        <path d="M50 10 C70 10 85 28 85 50 C85 72 70 90 50 90" stroke="white" stroke-width="3" fill="none"/>
+        <circle cx="50" cy="50" r="8" fill="#fde68a"/>
+        <text x="50" y="74" font-size="11" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold">ARTEMIS</text>
+      </svg>
+      <div>
+        <div class="imprint-logo-text">Artemis II – Mondziel-Paket</div>
+        <div class="imprint-logo-sub">Interaktive Bildungs-Webanwendung · LTP FINAL</div>
+      </div>
+    </div>
+
+    <div class="imprint-notice">
+      <strong>⚠ Kunstprojekt &amp; Bildungsanwendung</strong><br>
+      Diese Webanwendung ist ein nichtkommerzielles Kreativ- und Bildungsprojekt. 
+      Sie wurde auf Basis öffentlich zugänglicher NASA-Informationen und des offiziellen 
+      Artemis II Lunar Targeting Package (LTP) erstellt. 
+      Trotz sorgfältiger Recherche wird <strong>keine Gewähr für Vollständigkeit, 
+      Aktualität oder Richtigkeit</strong> der dargestellten Daten übernommen. 
+      Zeitangaben, Trajektorien und Zieldaten sind Näherungswerte für didaktische Zwecke.
+    </div>
+
+    <div class="imprint-section">
+      <h3>Angaben gemäß § 5 TMG</h3>
+      <p>
+        Decisions Made Easy GmbH<br>
+        Händelstraße 18<br>
+        76185 Karlsruhe<br>
+        Deutschland
+      </p>
+    </div>
+
+    <div class="imprint-section">
+      <h3>Vertreten durch</h3>
+      <p>Peter Schneider (Geschäftsführer)</p>
+    </div>
+
+    <div class="imprint-section">
+      <h3>Kontakt</h3>
+      <p>
+        Telefon: +49 151 15 77 3041<br>
+        E-Mail: <a href="mailto:peter@pjs.de">peter@pjs.de</a><br>
+        Web: <a href="https://www.pjs.de" target="_blank">www.pjs.de</a>
+      </p>
+    </div>
+
+    <div class="imprint-section">
+      <h3>Handelsregister</h3>
+      <p>
+        Amtsgericht Mannheim<br>
+        HRB 753768<br>
+        Steuernummer: 35 007/1807 7
+      </p>
+    </div>
+
+    <div class="imprint-section">
+      <h3>Inhaltlich Verantwortlicher (§ 18 Abs. 2 MStV)</h3>
+      <p>Peter Schneider, Händelstraße 18, 76185 Karlsruhe</p>
+    </div>
+
+    <div class="imprint-nasa-note">
+      <strong>Urheberrechtshinweis / Markenrechte:</strong><br>
+      „NASA", das NASA-Logo (Meatball) sowie „Artemis" sind eingetragene Marken der 
+      National Aeronautics and Space Administration (NASA), Washington D.C., USA. 
+      Die Verwendung in diesem Projekt erfolgt rein informativ und identifizierend – 
+      ohne kommerzielle Absicht und ohne Verbindung zur oder Genehmigung durch die NASA.<br><br>
+      Mondbilder und Kartenmaterial: NASA/GSFC/Arizona State University (LROC WAC), 
+      NASA Scientific Visualization Studio (SVS), USGS Astrogeology Science Center – 
+      alle im Rahmen der NASA Open Data Policy (kein Copyright für US-Regierungswerke) 
+      als Public Domain verfügbar. Wikimedia Commons-Bilder stehen unter 
+      ihren jeweiligen Lizenzen (CC BY / Public Domain).<br><br>
+      <strong>Haftungsausschluss:</strong> Dieses Projekt steht in keiner Verbindung 
+      zur NASA oder dem Artemis-Programm. Es handelt sich um ein unabhängiges 
+      Bildungs- und Kunstprojekt ohne Anspruch auf offizielle Repräsentation.
+    </div>
+
+    <button class="imprint-accept" onclick="acceptImprint()">
+      Verstanden – Zur Anwendung
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
