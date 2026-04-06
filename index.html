@@ -1,0 +1,2421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lunar Targeting Package – LTP FINAL</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  :root {
+    --nasa-blue: #0b3d91;
+    --nasa-red: #fc3d21;
+    --header-bg: #1a1a2e;
+    --sidebar-bg: #16213e;
+    --panel-bg: #0f172a;
+    --accent-blue: #2563eb;
+    --accent-purple: #7c3aed;
+    --accent-pink: #db2777;
+    --accent-teal: #0d9488;
+    --text-primary: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-dim: #64748b;
+    --border: rgba(148,163,184,0.15);
+    --highlight: rgba(37,99,235,0.2);
+    --active-tab: #1e3a5f;
+    --green-active: #22c55e;
+    --yellow: #eab308;
+    --pink-target: #db2777;
+    --purple-target: #7c3aed;
+    --orange-target: #ea580c;
+  }
+
+  body {
+    background: #0a0a0f;
+    color: var(--text-primary);
+    font-family: 'Roboto Condensed', 'Arial Narrow', Arial, sans-serif;
+    font-size: 12px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP NAV BAR ── */
+  .top-nav {
+    background: linear-gradient(180deg, #1c2b5e 0%, #0e1b3d 100%);
+    border-bottom: 1px solid rgba(59,130,246,0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    height: 44px;
+    flex-shrink: 0;
+    gap: 0;
+  }
+
+  .artemis-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    flex-shrink: 0;
+    margin-right: 8px;
+  }
+  .artemis-logo svg { width: 28px; height: 28px; }
+
+  .ltp-title-group {
+    display: flex;
+    flex-direction: column;
+    margin-right: 2px;
+  }
+  .ltp-title-group .ltp-main {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fde68a;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+  .ltp-title-group .ltp-sub {
+    font-size: 10px;
+    color: #93c5fd;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  .nav-tabs {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    margin-left: 4px;
+  }
+
+  .nav-tab {
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-right: 1px solid rgba(59,130,246,0.2);
+    transition: all 0.15s;
+    white-space: nowrap;
+    position: relative;
+    user-select: none;
+  }
+  .nav-tab:hover { background: rgba(37,99,235,0.15); color: white; }
+  .nav-tab.active {
+    background: linear-gradient(180deg, rgba(37,99,235,0.35) 0%, rgba(37,99,235,0.15) 100%);
+    color: white;
+    border-bottom: 2px solid #60a5fa;
+  }
+  .nav-tab.secondary {
+    background: rgba(255,255,255,0.06);
+  }
+
+  .nav-arrow {
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border-right: 1px solid rgba(59,130,246,0.2);
+    height: 100%;
+    flex-shrink: 0;
+  }
+  .nav-arrow:hover { background: rgba(37,99,235,0.2); color: white; }
+
+  .nav-spacer { flex: 1; }
+
+  .top-right-tabs {
+    display: flex;
+    align-items: stretch;
+    height: 100%;
+    border-left: 1px solid rgba(59,130,246,0.2);
+  }
+
+  .top-right-tab {
+    padding: 0 14px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    border-right: 1px solid rgba(59,130,246,0.2);
+    transition: all 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .top-right-tab:hover { background: rgba(255,255,255,0.08); color: white; }
+  .top-right-tab.active {
+    background: rgba(255,255,255,0.12);
+    color: white;
+    font-weight: 600;
+  }
+
+  .nasa-logo-area {
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 6px;
+  }
+  .nasa-meatball {
+    width: 34px;
+    height: 34px;
+  }
+
+  .settings-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    border: 1px solid rgba(59,130,246,0.2);
+    margin-left: 4px;
+  }
+  .settings-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
+  /* ── MAIN CONTENT ── */
+  .main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── LEFT SIDEBAR ── */
+  .sidebar {
+    width: 360px;
+    flex-shrink: 0;
+    background: #0d1b2e;
+    border-right: 1px solid rgba(59,130,246,0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Target List */
+  .target-list {
+    flex-shrink: 0;
+    overflow-y: auto;
+    max-height: 260px;
+  }
+  .target-list::-webkit-scrollbar { width: 4px; }
+  .target-list::-webkit-scrollbar-track { background: transparent; }
+  .target-list::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 2px; }
+
+  .target-item {
+    display: flex;
+    align-items: center;
+    padding: 5px 8px;
+    border-bottom: 1px solid rgba(59,130,246,0.1);
+    cursor: pointer;
+    transition: background 0.12s;
+    gap: 5px;
+  }
+  .target-item:hover { background: rgba(37,99,235,0.12); }
+  .target-item.active { background: rgba(37,99,235,0.22); }
+  .target-item.selected { background: rgba(219,39,119,0.15); border-left: 3px solid var(--pink-target); }
+  .target-item.crew-swap { background: rgba(124,58,237,0.12); }
+  .target-item.discussion { background: rgba(14,165,233,0.08); }
+
+  .flag-icon {
+    color: #ef4444;
+    font-size: 11px;
+    flex-shrink: 0;
+    width: 12px;
+  }
+
+  .target-checkbox {
+    width: 14px;
+    height: 14px;
+    border: 1.5px solid rgba(148,163,184,0.5);
+    border-radius: 2px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .target-checkbox.checked {
+    background: var(--green-active);
+    border-color: var(--green-active);
+  }
+  .target-checkbox.checked::after {
+    content: '✓';
+    color: white;
+    font-size: 9px;
+  }
+
+  .target-name {
+    flex: 1;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .target-name .target-num {
+    color: var(--text-secondary);
+    font-weight: 400;
+  }
+  .target-name em {
+    font-style: italic;
+    color: #f59e0b;
+    font-size: 10px;
+  }
+
+  .target-badges {
+    display: flex;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+  .badge {
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .badge-camera { background: #1d4ed8; color: #93c5fd; }
+  .badge-audio { background: #065f46; color: #6ee7b7; }
+  .badge-headphones { background: #7c3aed; color: #c4b5fd; }
+  .badge-lock { background: #92400e; color: #fcd34d; }
+
+  .target-time {
+    font-size: 10.5px;
+    color: #60a5fa;
+    font-family: 'Courier New', monospace;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Selected target detail */
+  .target-detail {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    border-top: 2px solid rgba(59,130,246,0.3);
+  }
+  .target-detail::-webkit-scrollbar { width: 4px; }
+  .target-detail::-webkit-scrollbar-track { background: transparent; }
+  .target-detail::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 2px; }
+
+  .detail-header {
+    margin-bottom: 8px;
+  }
+  .detail-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 2px;
+  }
+  .detail-subtitle {
+    font-size: 10px;
+    color: #f59e0b;
+    font-style: italic;
+  }
+
+  .detail-section {
+    margin-bottom: 10px;
+  }
+  .detail-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .detail-section ul {
+    list-style: none;
+    padding: 0;
+  }
+  .detail-section ul li {
+    font-size: 11px;
+    color: var(--text-primary);
+    line-height: 1.5;
+    padding-left: 10px;
+    position: relative;
+    margin-bottom: 2px;
+  }
+  .detail-section ul li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--text-secondary);
+  }
+
+  .unaided-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #f59e0b;
+    margin-top: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── RIGHT MAP PANEL ── */
+  .map-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .moon-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 40% 40%, #1a0a2e 0%, #000008 60%, #000 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .moon-image {
+    width: 85%;
+    height: 90%;
+    object-fit: contain;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Moon SVG drawn overlay */
+  .moon-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* Target markers on moon */
+  .moon-marker {
+    position: absolute;
+    cursor: pointer;
+    pointer-events: all;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+  }
+  .moon-marker .marker-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background: var(--accent-blue);
+    box-shadow: 0 0 6px rgba(37,99,235,0.8);
+  }
+  .moon-marker.active .marker-dot {
+    background: #f59e0b;
+    border-color: #fde68a;
+    box-shadow: 0 0 10px rgba(245,158,11,0.9);
+    width: 12px;
+    height: 12px;
+  }
+  .moon-marker .marker-label {
+    position: absolute;
+    left: 12px;
+    top: -4px;
+    background: rgba(0,0,0,0.75);
+    color: white;
+    font-size: 9px;
+    padding: 2px 4px;
+    border-radius: 3px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .moon-marker:hover .marker-label,
+  .moon-marker.active .marker-label { opacity: 1; }
+
+  /* Scale bar */
+  .scale-bar {
+    position: absolute;
+    bottom: 56px;
+    right: 16px;
+    z-index: 4;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 2px;
+  }
+  .scale-bar-line {
+    width: 80px;
+    height: 4px;
+    border: 1px solid white;
+    border-top: none;
+    display: flex;
+  }
+  .scale-bar-line::before, .scale-bar-line::after {
+    content: '';
+    flex: 1;
+  }
+  .scale-bar-line::before { border-right: 1px solid white; }
+  .scale-bar-label {
+    font-size: 9px;
+    color: white;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Timestamp */
+  .map-timestamp {
+    position: absolute;
+    bottom: 56px;
+    left: 8px;
+    z-index: 4;
+    font-size: 9px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Courier New', monospace;
+  }
+
+  /* ── BOTTOM TOOLBAR (Camera zoom etc) ── */
+  .map-toolbar {
+    height: 36px;
+    background: #1a1a2e;
+    border-top: 1px solid rgba(59,130,246,0.25);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .zoom-btn {
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(37,99,235,0.2);
+    border: 1px solid rgba(37,99,235,0.4);
+    color: #93c5fd;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+    user-select: none;
+  }
+  .zoom-btn:hover { background: rgba(37,99,235,0.4); color: white; }
+  .zoom-btn.active {
+    background: rgba(37,99,235,0.6);
+    color: white;
+    border-color: #60a5fa;
+  }
+
+  .toolbar-divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(148,163,184,0.2);
+    margin: 0 4px;
+  }
+
+  .tool-btn {
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(148,163,184,0.2);
+    color: var(--text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .tool-btn:hover { background: rgba(255,255,255,0.12); color: white; }
+  .tool-btn.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border-color: rgba(148,163,184,0.4);
+  }
+
+  .tool-btn-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(148,163,184,0.2);
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .tool-btn-icon:hover { background: rgba(255,255,255,0.12); color: white; }
+
+  .toolbar-spacer { flex: 1; }
+
+  /* ── WORKFLOW BAR (bottom) ── */
+  .workflow-bar {
+    height: 72px;
+    background: #0d1016;
+    border-top: 1px solid rgba(59,130,246,0.3);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .workflow-step {
+    flex: 1;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 6px 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s;
+    min-width: 0;
+  }
+  .workflow-step:hover { background: rgba(255,255,255,0.04); }
+
+  /* Arrow chevron between steps */
+  .workflow-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-top: 36px solid transparent;
+    border-bottom: 36px solid transparent;
+    z-index: 10;
+  }
+
+  .step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .step-num {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-weight: 500;
+  }
+
+  .step-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .step-items {
+    font-size: 9.5px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .step-items span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Color-coded steps */
+  .step-1 { background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%); border-right: 2px solid rgba(59,130,246,0.3); }
+  .step-2 { background: linear-gradient(135deg, #312e81 0%, #4338ca 100%); border-right: 2px solid rgba(99,102,241,0.3); }
+  .step-3 { background: linear-gradient(135deg, #581c87 0%, #7c3aed 100%); border-right: 2px solid rgba(139,92,246,0.3); }
+  .step-4 { background: linear-gradient(135deg, #831843 0%, #be185d 100%); border-right: 2px solid rgba(219,39,119,0.3); }
+  .step-5 { background: linear-gradient(135deg, #14532d 0%, #16a34a 100%); position: relative; }
+  .step-5::before {
+    content: '★';
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-size: 10px;
+    color: #fde68a;
+  }
+
+  /* Arrow shapes */
+  .step-arrow {
+    width: 0;
+    height: 0;
+    flex-shrink: 0;
+  }
+
+  /* ── MODALS & OVERLAYS ── */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: #0f172a;
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 6px;
+    padding: 20px;
+    min-width: 320px;
+    max-width: 480px;
+    color: var(--text-primary);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  }
+  .modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(59,130,246,0.3);
+    padding-bottom: 8px;
+  }
+  .modal-body {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .modal-body p { margin-bottom: 8px; }
+  .modal-body ul { padding-left: 16px; }
+  .modal-body li { margin-bottom: 4px; }
+  .modal-close {
+    margin-top: 16px;
+    padding: 6px 16px;
+    background: var(--accent-blue);
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  .modal-close:hover { background: #1d4ed8; }
+
+  /* Timeline view */
+  .timeline-view {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    background: #0d1b2e;
+  }
+  .timeline-view.active { display: flex; }
+  .timeline-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(59,130,246,0.1);
+    align-items: flex-start;
+  }
+  .timeline-time {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #60a5fa;
+    min-width: 70px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  .timeline-content {
+    flex: 1;
+  }
+  .timeline-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+  }
+  .timeline-desc {
+    font-size: 10.5px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+  .timeline-badge {
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .tb-science { background: rgba(37,99,235,0.3); color: #93c5fd; }
+  .tb-ops { background: rgba(124,58,237,0.3); color: #c4b5fd; }
+  .tb-crew { background: rgba(20,83,45,0.5); color: #86efac; }
+
+  /* Overview tab */
+  .overview-view {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    gap: 10px;
+  }
+  .overview-view.active { display: flex; }
+  .overview-card {
+    background: rgba(37,99,235,0.08);
+    border: 1px solid rgba(37,99,235,0.2);
+    border-radius: 6px;
+    padding: 10px;
+  }
+  .overview-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fde68a;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .overview-card p {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .crew-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .crew-member {
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+  .crew-name { color: white; font-weight: 600; }
+  .crew-agency { color: var(--text-dim); }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .stat-item {
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    padding: 6px 8px;
+    text-align: center;
+  }
+  .stat-value { font-size: 14px; font-weight: 700; color: #60a5fa; }
+  .stat-label { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+
+  /* Guide panel */
+  .guide-view {
+    display: none;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    gap: 8px;
+  }
+  .guide-view.active { display: flex; }
+  .guide-section {
+    border-left: 3px solid #60a5fa;
+    padding: 8px 10px;
+    background: rgba(37,99,235,0.08);
+    border-radius: 0 4px 4px 0;
+  }
+  .guide-section-title { font-size: 12px; font-weight: 700; color: white; margin-bottom: 4px; }
+  .guide-section p { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* Notification / Status bar */
+  .status-toast {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: rgba(20,83,45,0.95);
+    border: 1px solid #22c55e;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-size: 11px;
+    color: #86efac;
+    z-index: 50;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .status-toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Live clock */
+  .live-clock {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: #60a5fa;
+    padding: 0 10px;
+    border-left: 1px solid rgba(59,130,246,0.2);
+    white-space: nowrap;
+  }
+
+  /* Moon graphic - fallback drawn with CSS/canvas */
+  canvas.moon-canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Progress indicators */
+  .progress-bar {
+    height: 3px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    border-radius: 2px;
+    transition: width 1s ease;
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    background: rgba(15,23,42,0.95);
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--text-primary);
+    pointer-events: none;
+    z-index: 200;
+    max-width: 240px;
+    line-height: 1.5;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  /* Settings panel */
+  .settings-panel {
+    display: none;
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    width: 280px;
+    background: #0f172a;
+    border: 1px solid rgba(59,130,246,0.4);
+    border-radius: 6px;
+    padding: 16px;
+    z-index: 150;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  }
+  .settings-panel.open { display: block; }
+  .settings-title { font-size: 13px; font-weight: 700; color: white; margin-bottom: 12px; }
+  .settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(59,130,246,0.1);
+  }
+  .settings-label { font-size: 11px; color: var(--text-secondary); }
+  .toggle-switch {
+    width: 32px;
+    height: 17px;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .toggle-switch.on { background: #2563eb; }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: white;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.2s;
+  }
+  .toggle-switch.on::after { transform: translateX(15px); }
+
+  /* OneNote panel */
+  .onenote-panel {
+    display: none;
+    position: fixed;
+    top: 50px;
+    right: 10px;
+    width: 320px;
+    height: 400px;
+    background: #0f172a;
+    border: 1px solid rgba(124,58,237,0.4);
+    border-radius: 6px;
+    z-index: 150;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+    flex-direction: column;
+  }
+  .onenote-panel.open { display: flex; }
+  .onenote-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid rgba(124,58,237,0.3);
+    font-size: 12px;
+    font-weight: 700;
+    color: #c4b5fd;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .onenote-close { cursor: pointer; color: var(--text-dim); font-size: 16px; }
+  .onenote-close:hover { color: white; }
+  .onenote-textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 10px 14px;
+    color: var(--text-primary);
+    font-size: 11px;
+    line-height: 1.6;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+  }
+  .onenote-footer {
+    padding: 6px 14px;
+    border-top: 1px solid rgba(124,58,237,0.3);
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .sidebar { width: 280px; }
+    .workflow-bar { height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     TOP NAVIGATION BAR
+════════════════════════════════════════════ -->
+<nav class="top-nav">
+  <!-- Artemis Logo -->
+  <div class="artemis-logo" title="Artemis II Mission">
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="48" fill="#0b3d91" stroke="#4a90d9" stroke-width="2"/>
+      <path d="M50 10 C30 10 15 28 15 50 C15 72 30 90 50 90" stroke="#fc3d21" stroke-width="3" fill="none"/>
+      <path d="M50 10 C70 10 85 28 85 50 C85 72 70 90 50 90" stroke="white" stroke-width="3" fill="none"/>
+      <circle cx="50" cy="50" r="8" fill="#fde68a"/>
+      <path d="M20 50 L80 50" stroke="white" stroke-width="1.5" opacity="0.5"/>
+      <text x="50" y="74" font-size="11" fill="white" text-anchor="middle" font-family="Arial" font-weight="bold">ARTEMIS</text>
+    </svg>
+  </div>
+
+  <!-- LTP Title -->
+  <div class="ltp-title-group">
+    <span class="ltp-main">Lunar Targeting Package</span>
+    <span class="ltp-sub">LTP FINAL</span>
+  </div>
+
+  <!-- Main Nav Tabs -->
+  <div class="nav-tabs">
+    <div class="nav-tab active" data-tab="targets-view" onclick="switchMainTab(this, 'targets-view')">Lunar Targeting Plan</div>
+    <div class="nav-tab" data-tab="geo-view" onclick="switchMainTab(this, 'geo-view')">Lunar Geography Review</div>
+    <div class="nav-arrow" onclick="showMoreTabs()" title="More views">›</div>
+  </div>
+
+  <div class="nav-spacer"></div>
+
+  <!-- Live clock -->
+  <div class="live-clock" id="liveClock">21:18:00 GMT</div>
+
+  <!-- Right section tabs -->
+  <div class="top-right-tabs">
+    <div class="top-right-tab" onclick="switchRightTab(this, 'overview-panel')">Overview</div>
+    <div class="top-right-tab" onclick="switchRightTab(this, 'timeline-panel')">Timeline</div>
+    <div class="top-right-tab active" onclick="switchRightTab(this, 'targets-panel')">Targets</div>
+    <div class="top-right-tab" onclick="switchRightTab(this, 'guide-panel')">Guide</div>
+  </div>
+
+  <!-- NASA Logo -->
+  <div class="nasa-logo-area">
+    <svg class="nasa-meatball" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="50" rx="48" ry="48" fill="#0b3d91"/>
+      <ellipse cx="50" cy="50" rx="48" ry="48" fill="none" stroke="white" stroke-width="2"/>
+      <ellipse cx="50" cy="52" rx="30" ry="12" fill="white" opacity="0.15"/>
+      <path d="M10 58 Q30 38 90 42" stroke="#fc3d21" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <text x="50" y="55" font-size="18" fill="white" text-anchor="middle" font-family="Arial Black" font-weight="900" letter-spacing="1">NASA</text>
+      <ellipse cx="50" cy="50" rx="20" ry="8" fill="none" stroke="white" stroke-width="1.5" opacity="0.6"/>
+    </svg>
+  </div>
+
+  <!-- Settings -->
+  <div class="settings-btn" onclick="toggleSettings()" title="Settings">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+    </svg>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     MAIN CONTENT AREA
+════════════════════════════════════════════ -->
+<div class="main-content">
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <div class="sidebar" id="mainSidebar">
+
+    <!-- TARGET LIST (scrollable) -->
+    <div class="target-list" id="targetList">
+
+      <!-- Item: Cabin swap -->
+      <div class="target-item discussion" onclick="selectTarget(this, 'd-cabin')" data-id="d-cabin">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name">d. Cabin and Window Teams Swap</span>
+        <span class="target-time">20:55 GMT</span>
+      </div>
+
+      <!-- Item: Glushko 2/2 (selected / in progress) -->
+      <div class="target-item active selected" onclick="selectTarget(this, '11-glushko')" data-id="11-glushko" id="glushko-item">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">11. </span>Glushko Crater (2/2)</span>
+        <div class="target-badges">
+          <span class="badge badge-lock" title="Required observation">🔒</span>
+          <span class="badge badge-audio" title="Audio recording">🎧</span>
+        </div>
+        <span class="target-time">21:10 GMT</span>
+      </div>
+
+      <!-- Item: Orientale Basin (active) -->
+      <div class="target-item selected" onclick="selectTarget(this, '12-orientale')" data-id="12-orientale" id="orientale-item">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">12. </span>Orientale Basin</span>
+        <div class="target-badges">
+          <span class="badge badge-headphones" title="Headset communication">🎧</span>
+        </div>
+        <span class="target-time">21:18 GMT</span>
+      </div>
+
+      <!-- Item: Hertzsprung -->
+      <div class="target-item" onclick="selectTarget(this, '13-hertzsprung')" data-id="13-hertzsprung">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">13. </span>Hertzsprung Basin</span>
+        <span class="target-time">21:34 GMT</span>
+      </div>
+
+      <!-- Item: Window swap -->
+      <div class="target-item crew-swap" onclick="selectTarget(this, 'e-window')" data-id="e-window">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name">e. Window Team Position Swap</span>
+        <span class="target-time">21:41 GMT</span>
+      </div>
+
+      <!-- Item: Crew Choice #2 -->
+      <div class="target-item" onclick="selectTarget(this, '14-crew')" data-id="14-crew">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">14. </span>Crew Choice #2</span>
+        <span class="target-time">21:42 GMT</span>
+      </div>
+
+      <!-- Divider / more targets collapsed -->
+      <div class="target-item discussion" onclick="selectTarget(this, 'disc-terminator')" data-id="disc-terminator">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name">f. Discussion: Terminator</span>
+        <span class="target-time">22:05 GMT</span>
+      </div>
+
+      <div class="target-item crew-swap" onclick="selectTarget(this, 'f-swap')" data-id="f-swap">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name">f. Observing Teams Swap</span>
+        <span class="target-time">22:15 GMT</span>
+      </div>
+
+      <div class="target-item" onclick="selectTarget(this, '15-ohm')" data-id="15-ohm">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">15. </span>Ohm Crater</span>
+        <span class="target-time">22:30 GMT</span>
+      </div>
+
+      <div class="target-item" onclick="selectTarget(this, '16-earthset')" data-id="16-earthset">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">16. </span>Earthset</span>
+        <span class="target-time">22:45 GMT</span>
+      </div>
+
+      <div class="target-item" onclick="selectTarget(this, '17-impact')" data-id="17-impact">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">17. </span>Impact Flashes</span>
+        <span class="target-time">23:00 GMT</span>
+      </div>
+
+      <div class="target-item" onclick="selectTarget(this, '18-dust')" data-id="18-dust">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">18. </span>Lofted Lunar Dust</span>
+        <span class="target-time">23:15 GMT</span>
+      </div>
+
+      <div class="target-item" onclick="selectTarget(this, '19-earthrise')" data-id="19-earthrise">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">19. </span>Earthrise</span>
+        <span class="target-time">23:25 GMT</span>
+      </div>
+
+      <div class="target-item discussion" onclick="selectTarget(this, '20-sunset')" data-id="20-sunset">
+        <span class="flag-icon">⚑</span>
+        <div class="target-checkbox" onclick="toggleCheck(event, this)"></div>
+        <span class="target-name"><span class="target-num">20. </span>Sunset / Eclipse</span>
+        <span class="target-time">23:45 GMT</span>
+      </div>
+
+    </div>
+
+    <!-- SELECTED TARGET DETAIL -->
+    <div class="target-detail" id="targetDetail">
+
+      <div class="detail-header">
+        <div class="detail-title" id="detailTitle">12. Orientale Basin</div>
+        <div class="detail-subtitle" id="detailSubtitle">OR·ee·en·TAHL·ee</div>
+      </div>
+
+      <!-- Progress through flyby -->
+      <div style="margin-bottom: 10px;">
+        <div style="font-size: 9px; color: var(--text-dim); margin-bottom: 3px;">Flyby Progress</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 62%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--text-dim); margin-top: 2px;">
+          <span>Start 20:45 GMT</span>
+          <span id="progressPct">62% complete</span>
+          <span>End 01:20 GMT</span>
+        </div>
+      </div>
+
+      <div class="detail-section" id="detailTargetInfo">
+        <div class="detail-section-title">Target Information</div>
+        <ul id="detailInfoList">
+          <li>Youngest large basin on the Moon.</li>
+          <li>Prominent ejecta with secondary crater chains.</li>
+          <li>Diameter is distance between JSC and KSC.</li>
+        </ul>
+      </div>
+
+      <div class="detail-section" id="detailCameraActions">
+        <div class="detail-section-title">Camera Actions</div>
+        <ul id="detailCameraList">
+          <li>Centered images of entire basin and surrounding craters in a single frame.</li>
+          <li>Mosaic entire basin at full zoom w/ overlap.</li>
+          <li>Image and describe color, albedo, texture, and topography across mare patches and ring mountains.</li>
+          <li>Image and describe southern dark annular ring, including boundaries and texture.</li>
+          <li>Image and describe color/albedo variations, topography, and extent of ejecta including secondary crater chains.</li>
+        </ul>
+      </div>
+
+      <div class="unaided-label" id="detailUnaidedLabel">Unaided Eye Actions</div>
+      <div class="detail-section" id="detailUnaidedSection" style="margin-top: 5px;">
+        <ul id="detailUnaidedList">
+          <li>Describe overall appearance, size, and prominence of basin relative to surroundings.</li>
+          <li>Note any color differences between basin interior and exterior rings.</li>
+          <li>Estimate size relative to known landmarks.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RIGHT PANEL (Map + views) ── -->
+  <div class="map-panel">
+
+    <!-- OVERVIEW TAB -->
+    <div class="overview-view" id="overview-panel">
+      <div class="overview-card">
+        <div class="overview-card-title">Mission Overview — Artemis II</div>
+        <p>Artemis II marks the first crewed flight around the Moon since Apollo 17 (1972). The four-person crew will perform a free-return trajectory lunar flyby during April 6–7, 2026, providing the first human observations of the Moon from cislunar space in over 50 years.</p>
+        <div class="stat-grid" style="margin-top: 10px;">
+          <div class="stat-item"><div class="stat-value">10</div><div class="stat-label">Mission Days</div></div>
+          <div class="stat-item"><div class="stat-value">~370k</div><div class="stat-label">km from Earth</div></div>
+          <div class="stat-item"><div class="stat-value">20+</div><div class="stat-label">Science Targets</div></div>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-card-title">Crew</div>
+        <div class="crew-grid">
+          <div class="crew-member"><div class="crew-name">Reid Wiseman</div><div class="crew-agency">NASA – Commander</div></div>
+          <div class="crew-member"><div class="crew-name">Victor Glover</div><div class="crew-agency">NASA – Pilot</div></div>
+          <div class="crew-member"><div class="crew-name">Christina Koch</div><div class="crew-agency">NASA – MS1</div></div>
+          <div class="crew-member"><div class="crew-name">Jeremy Hansen</div><div class="crew-agency">CSA – MS2</div></div>
+        </div>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-card-title">Flyby Timeline</div>
+        <p>Start of flyby activities: April 6, 20:45 GMT<br>
+        Earthset: April 6, 22:45 GMT<br>
+        Closest Moon approach: April 6, 23:02 GMT (~7,400 km)<br>
+        Earthrise: April 6, 23:25 GMT<br>
+        Solar eclipse from Orion: ~1 hour duration<br>
+        End of flyby: April 7, 01:20 GMT</p>
+      </div>
+
+      <div class="overview-card">
+        <div class="overview-card-title">Observation Equipment</div>
+        <p>Photography: Handheld Nikon D5 cameras through Orion windows<br>
+        Focal lengths: Unaided eye, 135mm, 200mm, 400mm<br>
+        Audio: Personal crew devices for narration<br>
+        Notes: Annotated imagery for feature highlights</p>
+      </div>
+    </div>
+
+    <!-- TIMELINE TAB -->
+    <div class="timeline-view" id="timeline-panel">
+      <!-- generated by JS -->
+    </div>
+
+    <!-- TARGETS TAB (Moon Map) -->
+    <div id="targets-panel" style="flex:1; display:flex; flex-direction:column; overflow:hidden;">
+
+      <!-- Moon Canvas -->
+      <div class="moon-container" id="moonContainer">
+        <canvas id="moonCanvas"></canvas>
+        <div class="moon-overlay" id="moonOverlay"></div>
+
+        <!-- Scale bar -->
+        <div class="scale-bar">
+          <div class="scale-bar-label">150 km</div>
+          <div style="width:80px; height:2px; background:white; border:1px solid rgba(255,255,255,0.5);"></div>
+        </div>
+
+        <!-- Timestamp -->
+        <div class="map-timestamp" id="mapTimestamp">6 Apr 2026 21:18:00.000</div>
+      </div>
+
+      <!-- Map Toolbar -->
+      <div class="map-toolbar">
+        <!-- Zoom / camera mode buttons -->
+        <button class="zoom-btn active" id="btn-unaided" onclick="setZoom('unaided', this)">Unaided Eye</button>
+        <button class="zoom-btn" id="btn-135" onclick="setZoom('135', this)">135 mm</button>
+        <button class="zoom-btn" id="btn-200" onclick="setZoom('200', this)">200 mm</button>
+        <button class="zoom-btn" id="btn-400" onclick="setZoom('400', this)">400 mm</button>
+
+        <div class="toolbar-divider"></div>
+
+        <button class="tool-btn" id="btn-onenote" onclick="toggleOneNote()">OneNote</button>
+        <button class="tool-btn active" id="btn-labels" onclick="toggleLabels(this)">Labels Off</button>
+        <button class="tool-btn" id="btn-cuecard" onclick="toggleCueCard(this)">Cue Card Off</button>
+
+        <div class="toolbar-spacer"></div>
+
+        <div class="tool-btn-icon" onclick="openSearch()" title="Search targets">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+        </div>
+        <div class="tool-btn-icon" onclick="refreshMap()" title="Refresh map">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+          </svg>
+        </div>
+        <div class="tool-btn-icon" onclick="resetView()" title="Reset view">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUIDE TAB -->
+    <div class="guide-view" id="guide-panel">
+      <div style="font-size: 14px; font-weight: 700; color: white; margin-bottom: 10px;">Guide to the Artemis II Lunar Targeting Plan</div>
+
+      <div class="guide-section">
+        <div class="guide-section-title">What is the LTP?</div>
+        <p>The Lunar Targeting Plan (LTP) provides the timeline and science and operational objectives for the Artemis II crew to execute during the lunar flyby. It was developed by the Crew Lunar Observations (CLO) Team, a subgroup of the Artemis II Lunar Science Team.</p>
+      </div>
+
+      <div class="guide-section" style="border-color: #8b5cf6;">
+        <div class="guide-section-title">Flyby Key Events</div>
+        <p><strong>Start:</strong> April 6, 20:45 GMT — Flyby activities begin<br>
+        <strong>Earthset:</strong> April 6, 22:45 GMT — Earth disappears behind Moon<br>
+        <strong>Closest Approach:</strong> April 6, 23:02 GMT<br>
+        <strong>Earthrise:</strong> April 6, 23:25 GMT — Earth reappears<br>
+        <strong>Eclipse:</strong> ~1 hour total solar eclipse from Orion<br>
+        <strong>End:</strong> April 7, 01:20 GMT</p>
+      </div>
+
+      <div class="guide-section" style="border-color: #db2777;">
+        <div class="guide-section-title">Observation Methods</div>
+        <p><strong>Feature ID:</strong> Identify feature type/name, confirm target, location, observation style<br>
+        <strong>Geometry:</strong> Describe size, shape, boundary preservation<br>
+        <strong>Color & Shadow:</strong> Color tone, albedo, shadows/illumination<br>
+        <strong>Structure & Texture:</strong> Structures, slopes, texture<br>
+        <strong>Geologic Relations:</strong> Association, contact habit, contact relationship</p>
+      </div>
+
+      <div class="guide-section" style="border-color: #16a34a;">
+        <div class="guide-section-title">Crew Autonomy</div>
+        <p>The Artemis II astronauts have the autonomy to make changes according to mission needs and their judgment. The exact time, nature, and completeness of their science activities and mission events is subject to change. Crew Choice targets allow free scientific exploration.</p>
+      </div>
+
+      <div class="guide-section" style="border-color: #0d9488;">
+        <div class="guide-section-title">Camera Focal Lengths</div>
+        <p><strong>Unaided Eye:</strong> Full Moon overview, large-scale features, terminator regions<br>
+        <strong>135mm:</strong> Regional surveys, basin-scale features, highland/mare boundaries<br>
+        <strong>200mm:</strong> Individual craters, basin rings, color variations<br>
+        <strong>400mm:</strong> High-resolution crater interiors, ray systems, small-scale features</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     WORKFLOW BAR (bottom)
+════════════════════════════════════════════ -->
+<div class="workflow-bar">
+  <div class="workflow-step step-1" onclick="openWorkflowModal(1)" title="Click for details">
+    <div class="step-content">
+      <div class="step-num">1. Feature ID</div>
+      <div class="step-items">
+        <span>• Feature type/name</span>
+        <span>• Target? (yes/no)</span>
+        <span>• Location</span>
+        <span>• Observation style</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arrow -->
+  <svg class="step-arrow" width="20" height="72" viewBox="0 0 20 72" style="flex-shrink:0;">
+    <polygon points="0,0 20,36 0,72" fill="#312e81" opacity="0.9"/>
+  </svg>
+
+  <div class="workflow-step step-2" onclick="openWorkflowModal(2)" title="Click for details">
+    <div class="step-content">
+      <div class="step-num">2. Geometry</div>
+      <div class="step-items">
+        <span>• Size</span>
+        <span>• Shape</span>
+        <span>• Boundary Preservation</span>
+      </div>
+    </div>
+  </div>
+
+  <svg class="step-arrow" width="20" height="72" viewBox="0 0 20 72" style="flex-shrink:0;">
+    <polygon points="0,0 20,36 0,72" fill="#4338ca" opacity="0.9"/>
+  </svg>
+
+  <div class="workflow-step step-3" onclick="openWorkflowModal(3)" title="Click for details">
+    <div class="step-content">
+      <div class="step-num">3. Color &amp; Shadow</div>
+      <div class="step-items">
+        <span>• Color tone</span>
+        <span>• Albedo</span>
+        <span>• Shadows/ illumination</span>
+      </div>
+    </div>
+  </div>
+
+  <svg class="step-arrow" width="20" height="72" viewBox="0 0 20 72" style="flex-shrink:0;">
+    <polygon points="0,0 20,36 0,72" fill="#7c3aed" opacity="0.9"/>
+  </svg>
+
+  <div class="workflow-step step-4" onclick="openWorkflowModal(4)" title="Click for details">
+    <div class="step-content">
+      <div class="step-num">4. Structure &amp; Texture</div>
+      <div class="step-items">
+        <span>• Structures</span>
+        <span>• Slopes</span>
+        <span>• Texture</span>
+      </div>
+    </div>
+  </div>
+
+  <svg class="step-arrow" width="20" height="72" viewBox="0 0 20 72" style="flex-shrink:0;">
+    <polygon points="0,0 20,36 0,72" fill="#be185d" opacity="0.9"/>
+  </svg>
+
+  <div class="workflow-step step-5" onclick="openWorkflowModal(5)" title="Click for details">
+    <div class="step-content">
+      <div class="step-num">5. Geologic Relations</div>
+      <div class="step-items">
+        <span>• Association</span>
+        <span>• Contact habit</span>
+        <span>• Contact relationship</span>
+      </div>
+    </div>
+  </div>
+
+  <svg class="step-arrow" width="20" height="72" viewBox="0 0 20 72" style="flex-shrink:0;">
+    <polygon points="0,0 20,36 0,72" fill="#16a34a" opacity="0.9"/>
+  </svg>
+
+  <div class="workflow-step step-5" onclick="openThoughtsModal()" title="Click to add thoughts">
+    <div class="step-content">
+      <div class="step-num">★ Thoughts ★</div>
+      <div class="step-items">
+        <span>• Impressions</span>
+        <span>• Interpretations</span>
+        <span>• Any changes?</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════ -->
+<div class="modal-overlay" id="mainModal" onclick="closeModal()">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">Step Details</div>
+    <div class="modal-body" id="modalBody"></div>
+    <button class="modal-close" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- Settings Panel -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-title">⚙ Settings</div>
+  <div class="settings-row">
+    <span class="settings-label">Show Labels on Map</span>
+    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">Show Target Overlays</span>
+    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">Cue Cards</span>
+    <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">Auto-advance Targets</span>
+    <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">UTC/GMT Display</span>
+    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div class="settings-row">
+    <span class="settings-label">Night Mode</span>
+    <div class="toggle-switch on" onclick="this.classList.toggle('on')"></div>
+  </div>
+  <div style="margin-top: 12px;">
+    <button onclick="toggleSettings()" style="width:100%; padding: 6px; background: rgba(37,99,235,0.3); border: 1px solid rgba(37,99,235,0.5); border-radius: 4px; color: #93c5fd; cursor: pointer; font-size: 11px;">Close</button>
+  </div>
+</div>
+
+<!-- OneNote Panel -->
+<div class="onenote-panel" id="oneNotePanel">
+  <div class="onenote-header">
+    <span>📓 OneNote — Mission Notes</span>
+    <span class="onenote-close" onclick="toggleOneNote()">×</span>
+  </div>
+  <textarea class="onenote-textarea" placeholder="Type mission notes here...&#10;&#10;Target: Orientale Basin&#10;Time: 21:18 GMT&#10;&#10;Observations:&#10;- Dark impact melt interior visible&#10;- Bright ring mountains prominent&#10;- Ejecta extends to NW and SE..."></textarea>
+  <div class="onenote-footer">Auto-saved · Artemis II CLO Team · 6 Apr 2026</div>
+</div>
+
+<!-- Status Toast -->
+<div class="status-toast" id="statusToast"></div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+// ── TARGET DATA ──
+const targetData = {
+  'd-cabin': {
+    title: 'd. Cabin and Window Teams Swap',
+    subtitle: 'Crew Operations',
+    info: ['Crew members swap cabin and window observation positions.', 'Ensures all crew members experience both vantage points.', 'Operational pause for team coordination.'],
+    camera: [],
+    unaided: ['Take a moment to orient to your new position.', 'Note any differences in viewing angle from new window.'],
+    type: 'ops'
+  },
+  '11-glushko': {
+    title: '11. Glushko Crater (2/2)',
+    subtitle: 'Second photometric observation',
+    info: [
+      'High albedo, complex crater with prominent ray system.',
+      'Located on western nearside, bright young impact crater.',
+      'Second of two photometric observations for this crew shift.',
+      'Helps understand how changes in viewing conditions affect human perception of brightness, color, and texture.'
+    ],
+    camera: [
+      'Full-frame image of Glushko and surrounding ray system.',
+      'Mosaic of ray pattern extending outward from crater.',
+      'Compare apparent brightness with previous observation.',
+      'Document color variations in rays vs. surrounding terrain.'
+    ],
+    unaided: [
+      'Note any change in perceived brightness compared to first observation.',
+      'Estimate how far the rays extend from the crater.',
+      'Comment on albedo contrast with surrounding mare.'
+    ],
+    type: 'science'
+  },
+  '12-orientale': {
+    title: '12. Orientale Basin',
+    subtitle: 'OR·ee·en·TAHL·ee',
+    info: [
+      'Youngest large basin on the Moon.',
+      'Prominent ejecta with secondary crater chains.',
+      'Diameter is distance between JSC and KSC.',
+      'Multi-ringed impact structure, ~950 km across.',
+      'Best-preserved large impact basin on the Moon.'
+    ],
+    camera: [
+      'Centered images of entire basin and surrounding craters in a single frame.',
+      'Mosaic entire basin at full zoom w/ overlap.',
+      'Image and describe color, albedo, texture, and topography across mare patches and ring mountains.',
+      'Image and describe southern dark annular ring, including boundaries and texture.',
+      'Image and describe color/albedo variations, topography, and extent of ejecta including secondary crater chains.'
+    ],
+    unaided: [
+      'Describe overall appearance, size, and prominence of basin.',
+      'Note color differences between basin interior and exterior rings.',
+      'Estimate size relative to known landmarks.',
+      'Describe the concentric ring structure visible from this vantage.'
+    ],
+    type: 'science'
+  },
+  '13-hertzsprung': {
+    title: '13. Hertzsprung Basin',
+    subtitle: 'Farside multi-ring basin',
+    info: [
+      'Older, degraded multiring basin on the lunar farside.',
+      'Compare with the younger Orientale Basin.',
+      'Located on farside; rarely observable from Earth.',
+      'Shows effects of degradation over billions of years.',
+      'Important reference for understanding basin evolution.'
+    ],
+    camera: [
+      'Wide-field image capturing the full basin extent.',
+      'Compare ring structure with Orientale Basin.',
+      'Document degradation patterns and fill material.',
+      'Note any contrast in albedo between basin floor and rim.'
+    ],
+    unaided: [
+      'Compare general appearance with Orientale.',
+      'Note how degradation changes the visual impression.',
+      'Describe the relative prominence of ring features.'
+    ],
+    type: 'science'
+  },
+  'e-window': {
+    title: 'e. Window Team Position Swap',
+    subtitle: 'Crew Operations',
+    info: ['Window observation team swaps positions.', 'Distributes observation responsibilities evenly.', 'All crew members participate in science observations.'],
+    camera: [],
+    unaided: ['Confirm new window assignment.', 'Orient to current Moon position from new window.'],
+    type: 'ops'
+  },
+  '14-crew': {
+    title: '14. Crew Choice #2',
+    subtitle: 'Free Exploration',
+    info: [
+      'Focus on regions, patterns, or features that interest or stand out to crew using their training.',
+      'Crew autonomy to select science targets of interest.',
+      'Document any unexpected or particularly striking features.',
+      'Apply learned observation techniques to chosen target.'
+    ],
+    camera: ['Image any features of interest identified by crew.', 'Mosaic across regions showing unusual patterns.', 'Document any unexpected findings.'],
+    unaided: ['Describe what caught your attention and why.', 'Apply all 5 workflow steps to your chosen feature.'],
+    type: 'crew'
+  },
+  'disc-terminator': {
+    title: 'f. Discussion: Terminator',
+    subtitle: 'Group Discussion',
+    info: [
+      'Describe the topography, albedo, and color of features along or near the terminator.',
+      'Focus on eastern South Pole-Aitken Basin and Apollo Basin.',
+      'Terminator reveals topographic relief through extreme shadow angles.'
+    ],
+    camera: ['Images of terminator regions for shadow-enhanced topography.'],
+    unaided: ['Group discussion — all crew contribute observations.', 'Compare terminator features across different basin types.'],
+    type: 'discussion'
+  },
+  'f-swap': {
+    title: 'f. Observing Teams Swap',
+    subtitle: 'Crew Operations',
+    info: ['Full observing team rotation.', 'New shift takes over primary observation duties.'],
+    camera: [],
+    unaided: ['Hand off current observation status to relieving crew.'],
+    type: 'ops'
+  },
+  '15-ohm': {
+    title: '15. Ohm Crater',
+    subtitle: 'Complex rayed crater',
+    info: [
+      'Small, complex crater with prominent ray system.',
+      'Second of two craters in Crater Duo (Glushko, Ohm).',
+      'Located on lunar farside.',
+      'Important for comparative study with Glushko crater.'
+    ],
+    camera: ['Full frame of Ohm and its ray system.', 'Compare ray extent and morphology with Glushko.', 'High-resolution imagery of crater interior.'],
+    unaided: ['Compare overall brightness with Glushko.', 'Estimate relative age from ray preservation.'],
+    type: 'science'
+  },
+  '16-earthset': {
+    title: '16. Earthset',
+    subtitle: 'Earth disappears behind Moon',
+    info: [
+      'Earth sets behind the lunar limb.',
+      'Opportunity to address how perception of color on the Moon may change when Earth is in view.',
+      'Entering the communication blackout zone.'
+    ],
+    camera: ['Sequence of Earth setting behind the lunar limb.', 'Document changing illumination as Earth disappears.'],
+    unaided: ['Observe and describe the moment Earth disappears.', 'Note any change in perceived lighting or colors.'],
+    type: 'science'
+  },
+  '17-impact': {
+    title: '17. Impact Flashes',
+    subtitle: 'Citizen Science Campaign',
+    info: [
+      'Opportunity to watch for short-lived flashes on the dark parts of the lunar surface.',
+      'Caused by impact bombardment — meteoroids striking the Moon.',
+      'Part of a Citizen Science campaign.',
+      'Dark side of Moon required for visibility.'
+    ],
+    camera: ['Long-exposure imagery of dark lunar surface.', 'Video monitoring for flash events.'],
+    unaided: ['Watch the dark portion of the lunar surface carefully.', 'Note time, duration, and location of any flashes.'],
+    type: 'science'
+  },
+  '18-dust': {
+    title: '18. Lofted Lunar Dust',
+    subtitle: 'Exosphere observation',
+    info: [
+      'Opportunity to see whether lunar dust in the exosphere may be visible.',
+      'Dust backlit by Earth along the dark western limb.',
+      'Lunar exosphere dust is lofted by electrostatic and micrometeorite processes.'
+    ],
+    camera: ['Limb imagery looking for dust haze backlit by Earth.', 'Series of exposures with varying settings.'],
+    unaided: ['Look along the dark western limb for any haze or glow.'],
+    type: 'science'
+  },
+  '19-earthrise': {
+    title: '19. Earthrise',
+    subtitle: 'Earth rises above lunar limb',
+    info: [
+      'Earth rises above the Moon\'s limb returning into view.',
+      'Mirror image of historic Apollo 8 "Earthrise" photograph.',
+      'Communication with Mission Control resumes.',
+      'Unique perspective: Moon foreground, Earth in space.'
+    ],
+    camera: ['Sequence of Earth rising above the lunar limb.', 'Multiple focal lengths to capture the moment.'],
+    unaided: ['Observe and narrate Earth\'s appearance over the limb.', 'Compare colors of Earth vs Moon surface.'],
+    type: 'science'
+  },
+  '20-sunset': {
+    title: '20. Sunset / Solar Eclipse',
+    subtitle: 'Total solar eclipse from Orion',
+    info: [
+      'As the sun is eclipsed by the Moon, observe the solar corona and the lunar horizon.',
+      'Total solar eclipse lasting almost an hour.',
+      'Unique vantage point — no human has experienced this before.',
+      'Solar corona visible around the Moon\'s limb.'
+    ],
+    camera: ['Sequence capturing solar corona during eclipse.', 'Lunar horizon with backlit atmosphere.', 'Earth in eclipse shadow.'],
+    unaided: ['Describe the solar corona appearance.', 'Note any visible Earthshine on the Moon.'],
+    type: 'science'
+  }
+};
+
+// ── MOON TARGETS (positions on canvas) ──
+const moonTargets = [
+  { id: 'glushko', label: 'Glushko', x: 0.32, y: 0.38, targetId: '11-glushko' },
+  { id: 'orientale', label: '12. Orientale Basin', x: 0.24, y: 0.56, targetId: '12-orientale', active: true },
+  { id: 'hertzsprung', label: 'Hertzsprung Basin', x: 0.38, y: 0.42, targetId: '13-hertzsprung' },
+  { id: 'montes-cordillera', label: 'Montes Cordillera', x: 0.27, y: 0.50, targetId: '12-orientale' },
+  { id: 'montes-rook', label: 'Montes Rook', x: 0.30, y: 0.52, targetId: '12-orientale' },
+  { id: 'maunder', label: 'Maunder Crater', x: 0.42, y: 0.34, targetId: '13-hertzsprung' },
+  { id: 'riysel', label: 'Riysel Crater', x: 0.28, y: 0.60, targetId: '12-orientale' },
+  { id: 'einstein', label: 'Einstein Basin', x: 0.19, y: 0.44, targetId: '12-orientale' },
+];
+
+let currentZoom = 'unaided';
+let labelsVisible = false;
+let cueCardVisible = false;
+let currentTarget = '12-orientale';
+let moonCtx = null;
+let moonCanvas = null;
+let animFrame = null;
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  const h = String(now.getUTCHours()).padStart(2, '0');
+  const m = String(now.getUTCMinutes()).padStart(2, '0');
+  const s = String(now.getUTCSeconds()).padStart(2, '0');
+  const timeStr = `${h}:${m}:${s} GMT`;
+  document.getElementById('liveClock').textContent = timeStr;
+  
+  // Also update map timestamp
+  const d = now.getUTCDate();
+  const mon = now.toLocaleString('en', { month: 'short', timeZone: 'UTC' });
+  const yr = now.getUTCFullYear();
+  document.getElementById('mapTimestamp').textContent = `${d} ${mon} ${yr} ${h}:${m}:${s}.000`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── MOON CANVAS ──
+function initMoon() {
+  moonCanvas = document.getElementById('moonCanvas');
+  const container = document.getElementById('moonContainer');
+  moonCanvas.width = container.clientWidth;
+  moonCanvas.height = container.clientHeight;
+  moonCtx = moonCanvas.getContext('2d');
+  drawMoon();
+}
+
+function drawMoon() {
+  if (!moonCtx) return;
+  const w = moonCanvas.width;
+  const h = moonCanvas.height;
+  moonCtx.clearRect(0, 0, w, h);
+
+  // Background — deep space
+  const bgGrad = moonCtx.createRadialGradient(w*0.4, h*0.4, 0, w*0.5, h*0.5, Math.max(w,h)*0.7);
+  bgGrad.addColorStop(0, '#1a0a2e');
+  bgGrad.addColorStop(0.5, '#08040f');
+  bgGrad.addColorStop(1, '#000000');
+  moonCtx.fillStyle = bgGrad;
+  moonCtx.fillRect(0, 0, w, h);
+
+  // Stars
+  moonCtx.fillStyle = 'rgba(255,255,255,0.7)';
+  for (let i = 0; i < 80; i++) {
+    const sx = (Math.sin(i * 137.5) * 0.5 + 0.5) * w;
+    const sy = (Math.cos(i * 99.7) * 0.5 + 0.5) * h;
+    const sr = Math.sin(i * 23.1) * 0.5 + 0.7;
+    moonCtx.beginPath();
+    moonCtx.arc(sx, sy, sr, 0, Math.PI * 2);
+    moonCtx.fill();
+  }
+
+  // Moon disk
+  const cx = w * 0.58;
+  const cy = h * 0.5;
+  const r = Math.min(w, h) * 0.42;
+
+  // Moon glow
+  const glowGrad = moonCtx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r * 1.3);
+  glowGrad.addColorStop(0, 'rgba(200,190,170,0.15)');
+  glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  moonCtx.fillStyle = glowGrad;
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, r * 1.3, 0, Math.PI * 2);
+  moonCtx.fill();
+
+  // Main moon body — more realistic dark/grey lunar surface
+  const moonGrad = moonCtx.createRadialGradient(cx - r*0.15, cy - r*0.12, r*0.05, cx, cy, r);
+  moonGrad.addColorStop(0, '#cec8b8');
+  moonGrad.addColorStop(0.25, '#aea89a');
+  moonGrad.addColorStop(0.55, '#8a8476');
+  moonGrad.addColorStop(0.85, '#6a6460');
+  moonGrad.addColorStop(1, '#3a3630');
+  moonCtx.fillStyle = moonGrad;
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  moonCtx.fill();
+  // Subtle surface texture
+  moonCtx.save();
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  moonCtx.clip();
+  for(let i=0;i<40;i++){
+    const nx = cx + (Math.sin(i*57.3)*0.4)*r*2;
+    const ny = cy + (Math.cos(i*83.1)*0.4)*r*2;
+    const nr = (Math.sin(i*31.7)*0.4+0.6)*r*0.015;
+    moonCtx.fillStyle = `rgba(0,0,0,${0.1+Math.abs(Math.sin(i*17.3))*0.12})`;
+    moonCtx.beginPath();
+    moonCtx.arc(nx,ny,nr,0,Math.PI*2);
+    moonCtx.fill();
+  }
+  moonCtx.restore();
+
+  // Mare regions (dark patches)
+  const mares = [
+    { ox: -0.05, oy: -0.15, rx: 0.25, ry: 0.20, color: 'rgba(40,36,30,0.62)' },  // Mare Imbrium
+    { ox: 0.15, oy: 0.05, rx: 0.18, ry: 0.14, color: 'rgba(35,32,26,0.58)' },   // Mare Serenitatis
+    { ox: 0.22, oy: -0.05, rx: 0.16, ry: 0.12, color: 'rgba(32,29,23,0.55)' },  // Mare Tranquillitatis
+    { ox: 0.08, oy: 0.12, rx: 0.22, ry: 0.18, color: 'rgba(42,38,30,0.58)' },  // Oceanus Procellarum
+    { ox: -0.20, oy: 0.10, rx: 0.14, ry: 0.12, color: 'rgba(38,34,28,0.50)' }, // Western maria
+    { ox: -0.08, oy: -0.05, rx: 0.10, ry: 0.08, color: 'rgba(36,32,26,0.45)' },
+    { ox: 0.12, oy: 0.22, rx: 0.14, ry: 0.10, color: 'rgba(40,36,28,0.50)' },
+    { ox: -0.02, oy: 0.28, rx: 0.08, ry: 0.06, color: 'rgba(34,30,24,0.42)' }, // Mare Humorum
+  ];
+  mares.forEach(mare => {
+    const mx = cx + mare.ox * r * 2;
+    const my = cy + mare.oy * r * 2;
+    const grad = moonCtx.createRadialGradient(mx, my, 0, mx, my, mare.rx * r * 1.5);
+    grad.addColorStop(0, mare.color);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    moonCtx.save();
+    moonCtx.beginPath();
+    moonCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    moonCtx.clip();
+    moonCtx.fillStyle = grad;
+    moonCtx.beginPath();
+    moonCtx.ellipse(mx, my, mare.rx * r, mare.ry * r, 0, 0, Math.PI * 2);
+    moonCtx.fill();
+    moonCtx.restore();
+  });
+
+  // Craters
+  const craters = [
+    { ox: 0.18, oy: -0.28, r2: 0.04 },
+    { ox: 0.28, oy: 0.10, r2: 0.03 },
+    { ox: -0.05, oy: 0.30, r2: 0.05 },
+    { ox: 0.30, oy: -0.15, r2: 0.025 },
+    { ox: -0.25, oy: -0.20, r2: 0.04 },
+    { ox: 0.05, oy: -0.35, r2: 0.03 },
+    { ox: -0.30, oy: 0.25, r2: 0.045 },
+    { ox: 0.35, oy: 0.25, r2: 0.035 },
+    { ox: -0.10, oy: -0.05, r2: 0.02 },
+    { ox: 0.20, oy: 0.30, r2: 0.025 },
+  ];
+  craters.forEach(c => {
+    const cx2 = cx + c.ox * r * 2;
+    const cy2 = cy + c.oy * r * 2;
+    const cr = c.r2 * r;
+    moonCtx.save();
+    moonCtx.beginPath();
+    moonCtx.arc(cx, cy, r, 0, Math.PI * 2);
+    moonCtx.clip();
+    // Crater shadow
+    moonCtx.fillStyle = 'rgba(50,45,35,0.5)';
+    moonCtx.beginPath();
+    moonCtx.arc(cx2, cy2, cr, 0, Math.PI * 2);
+    moonCtx.fill();
+    // Crater rim highlight
+    moonCtx.strokeStyle = 'rgba(220,210,190,0.4)';
+    moonCtx.lineWidth = 1.5;
+    moonCtx.beginPath();
+    moonCtx.arc(cx2, cy2, cr, 0, Math.PI * 2);
+    moonCtx.stroke();
+    moonCtx.restore();
+  });
+
+  // Orientale Basin — prominent multi-ring structure on western limb
+  const obx = cx - r * 0.55;
+  const oby = cy + r * 0.12;
+  moonCtx.save();
+  moonCtx.beginPath();
+  moonCtx.arc(cx, cy, r, 0, Math.PI * 2);
+  moonCtx.clip();
+  // Outer ejecta blanket
+  const ejGrad = moonCtx.createRadialGradient(obx, oby, r*0.25, obx, oby, r * 0.45);
+  ejGrad.addColorStop(0, 'rgba(180,172,155,0.18)');
+  ejGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  moonCtx.fillStyle = ejGrad;
+  moonCtx.beginPath();
+  moonCtx.arc(obx, oby, r * 0.45, 0, Math.PI * 2);
+  moonCtx.fill();
+  // Dark impact melt interior
+  const obGrad = moonCtx.createRadialGradient(obx, oby, 0, obx, oby, r * 0.10);
+  obGrad.addColorStop(0, 'rgba(18,14,10,0.88)');
+  obGrad.addColorStop(0.6, 'rgba(28,22,16,0.72)');
+  obGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  moonCtx.fillStyle = obGrad;
+  moonCtx.beginPath();
+  moonCtx.arc(obx, oby, r * 0.10, 0, Math.PI * 2);
+  moonCtx.fill();
+  // Inner Rook Ring
+  moonCtx.strokeStyle = 'rgba(200,192,175,0.65)';
+  moonCtx.lineWidth = 2.5;
+  moonCtx.beginPath();
+  moonCtx.arc(obx, oby, r * 0.13, 0, Math.PI * 2);
+  moonCtx.stroke();
+  // Outer Rook Ring
+  moonCtx.strokeStyle = 'rgba(185,177,162,0.55)';
+  moonCtx.lineWidth = 3;
+  moonCtx.beginPath();
+  moonCtx.arc(obx, oby, r * 0.21, 0, Math.PI * 2);
+  moonCtx.stroke();
+  // Cordillera Ring (outermost)
+  moonCtx.strokeStyle = 'rgba(165,158,145,0.45)';
+  moonCtx.lineWidth = 2.5;
+  moonCtx.beginPath();
+  moonCtx.arc(obx, oby, r * 0.32, 0, Math.PI * 2);
+  moonCtx.stroke();
+  // Dark annular ring (south)
+  moonCtx.save();
+  moonCtx.strokeStyle = 'rgba(30,25,18,0.65)';
+  moonCtx.lineWidth = 6;
+  moonCtx.beginPath();
+  moonCtx.arc(obx, oby + r*0.05, r * 0.16, Math.PI*0.3, Math.PI*0.85);
+  moonCtx.stroke();
+  moonCtx.restore();
+  moonCtx.restore();
+
+  // Science overlay lines / selection boxes
+  if (currentTarget === '12-orientale') {
+    moonCtx.save();
+    moonCtx.strokeStyle = 'rgba(255,255,255,0.7)';
+    moonCtx.lineWidth = 1.5;
+    moonCtx.setLineDash([]);
+    moonCtx.strokeRect(obx - r * 0.38, oby - r * 0.35, r * 0.76, r * 0.70);
+    moonCtx.restore();
+  }
+
+  // Green circle (field of view indicator)
+  const fovRadii = { unaided: r * 0.95, '135': r * 0.7, '200': r * 0.55, '400': r * 0.35 };
+  const fovR = fovRadii[currentZoom] || r * 0.95;
+  moonCtx.save();
+  moonCtx.strokeStyle = 'rgba(34,197,94,0.65)';
+  moonCtx.lineWidth = 1.5;
+  moonCtx.setLineDash([6, 4]);
+  moonCtx.beginPath();
+  moonCtx.ellipse(cx, cy, fovR, fovR * 0.85, 0, 0, Math.PI * 2);
+  moonCtx.stroke();
+  moonCtx.restore();
+
+  // Labels
+  if (labelsVisible) {
+    moonCtx.fillStyle = 'rgba(255,255,255,0.9)';
+    moonCtx.font = '10px Arial';
+    moonCtx.fillText('Orientale Basin', obx - r * 0.12, oby + r * 0.20);
+    moonCtx.fillText('Montes Cordillera', obx + r * 0.05, oby + r * 0.10);
+    moonCtx.fillText('Montes Rook', obx + r * 0.03, oby + r * 0.05);
+  }
+
+  // Draw target markers
+  moonTargets.forEach(t => {
+    const tx = cx + (t.x - 0.58) * w + 10;
+    const ty = cy + (t.y - 0.5) * h;
+    moonCtx.beginPath();
+    moonCtx.arc(tx, ty, t.active ? 6 : 4, 0, Math.PI * 2);
+    moonCtx.fillStyle = t.active ? '#f59e0b' : (currentTarget === t.targetId ? '#60a5fa' : 'rgba(37,99,235,0.7)');
+    moonCtx.fill();
+    moonCtx.strokeStyle = 'white';
+    moonCtx.lineWidth = 1.5;
+    moonCtx.stroke();
+    if (labelsVisible && t.label) {
+      moonCtx.fillStyle = 'rgba(255,255,255,0.85)';
+      moonCtx.font = '9px Arial';
+      moonCtx.fillText(t.label, tx + 8, ty + 3);
+    }
+  });
+}
+
+// ── SELECT TARGET ──
+function selectTarget(el, id) {
+  // Update active state in list
+  document.querySelectorAll('.target-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+  currentTarget = id;
+
+  // Update detail panel
+  const data = targetData[id];
+  if (!data) return;
+
+  document.getElementById('detailTitle').textContent = data.title;
+  document.getElementById('detailSubtitle').textContent = data.subtitle;
+
+  const infoList = document.getElementById('detailInfoList');
+  infoList.innerHTML = data.info.map(i => `<li>${i}</li>`).join('');
+
+  const camList = document.getElementById('detailCameraList');
+  const camSection = document.getElementById('detailCameraActions');
+  if (data.camera.length > 0) {
+    camList.innerHTML = data.camera.map(i => `<li>${i}</li>`).join('');
+    camSection.style.display = '';
+  } else {
+    camSection.style.display = 'none';
+  }
+
+  const unList = document.getElementById('detailUnaidedList');
+  const unLabel = document.getElementById('detailUnaidedLabel');
+  const unSection = document.getElementById('detailUnaidedSection');
+  if (data.unaided.length > 0) {
+    unList.innerHTML = data.unaided.map(i => `<li>${i}</li>`).join('');
+    unLabel.style.display = '';
+    unSection.style.display = '';
+  } else {
+    unLabel.style.display = 'none';
+    unSection.style.display = 'none';
+  }
+
+  // Redraw moon
+  drawMoon();
+  showToast(`Target selected: ${data.title.substring(0, 30)}`);
+}
+
+// ── CHECKBOX TOGGLE ──
+function toggleCheck(event, el) {
+  event.stopPropagation();
+  el.classList.toggle('checked');
+  showToast(el.classList.contains('checked') ? 'Target marked complete' : 'Target unmarked');
+}
+
+// ── MAIN TAB SWITCH ──
+function switchMainTab(el, view) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  showToast('Switched view: ' + el.textContent.trim());
+}
+
+// ── RIGHT PANEL TAB SWITCH ──
+function switchRightTab(el, panelId) {
+  document.querySelectorAll('.top-right-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+
+  // Hide all panels
+  ['overview-panel', 'timeline-panel', 'targets-panel', 'guide-panel'].forEach(id => {
+    const panel = document.getElementById(id);
+    if (panel) {
+      if (id === 'targets-panel') {
+        panel.style.display = 'none';
+      } else {
+        panel.classList.remove('active');
+      }
+    }
+  });
+
+  // Show selected
+  const target = document.getElementById(panelId);
+  if (target) {
+    if (panelId === 'targets-panel') {
+      target.style.display = 'flex';
+      setTimeout(() => { resizeMoon(); drawMoon(); }, 50);
+    } else {
+      target.classList.add('active');
+    }
+  }
+}
+
+// ── ZOOM BUTTONS ──
+function setZoom(zoom, el) {
+  currentZoom = zoom;
+  document.querySelectorAll('.zoom-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  drawMoon();
+  showToast('Camera: ' + el.textContent.trim());
+}
+
+// ── LABELS TOGGLE ──
+function toggleLabels(el) {
+  labelsVisible = !labelsVisible;
+  el.textContent = labelsVisible ? 'Labels On' : 'Labels Off';
+  el.classList.toggle('active', labelsVisible);
+  drawMoon();
+}
+
+// ── CUE CARD ──
+function toggleCueCard(el) {
+  cueCardVisible = !cueCardVisible;
+  el.textContent = cueCardVisible ? 'Cue Card On' : 'Cue Card Off';
+  el.classList.toggle('active', cueCardVisible);
+  if (cueCardVisible) {
+    const data = targetData[currentTarget];
+    if (data) {
+      showModal('Cue Card: ' + data.title, `
+        <p><strong>Target:</strong> ${data.title}</p>
+        <p><strong>Science Focus:</strong> ${data.info[0]}</p>
+        ${data.camera.length > 0 ? '<p><strong>Primary Camera Action:</strong> ' + data.camera[0] + '</p>' : ''}
+        <p><strong>Key Question:</strong> What are the color, albedo, texture, and topographic characteristics of this feature?</p>
+      `);
+    }
+  }
+}
+
+// ── ONENOTE ──
+function toggleOneNote() {
+  const panel = document.getElementById('oneNotePanel');
+  panel.classList.toggle('open');
+}
+
+// ── SETTINGS ──
+function toggleSettings() {
+  const panel = document.getElementById('settingsPanel');
+  panel.classList.toggle('open');
+}
+
+// ── SEARCH ──
+function openSearch() {
+  showModal('Search Targets', `
+    <p style="margin-bottom: 12px;">Enter target name or feature to search:</p>
+    <input type="text" placeholder="e.g. Orientale, Glushko, Impact Flashes..." 
+      style="width:100%; background: rgba(255,255,255,0.08); border: 1px solid rgba(59,130,246,0.4); border-radius: 4px; padding: 6px 10px; color: white; font-size: 12px; outline: none; font-family: inherit;"
+      oninput="searchTargets(this.value)">
+    <div id="searchResults" style="margin-top: 10px;"></div>
+  `);
+}
+
+function searchTargets(query) {
+  const results = document.getElementById('searchResults');
+  if (!results) return;
+  if (!query) { results.innerHTML = ''; return; }
+  
+  const matches = Object.entries(targetData).filter(([id, data]) => 
+    data.title.toLowerCase().includes(query.toLowerCase()) ||
+    data.info.some(i => i.toLowerCase().includes(query.toLowerCase()))
+  );
+  
+  results.innerHTML = matches.length ? matches.map(([id, data]) => `
+    <div onclick="closeModal(); selectTargetById('${id}')" style="padding: 6px 8px; border-radius: 4px; cursor: pointer; border-bottom: 1px solid rgba(59,130,246,0.1); font-size: 11px; color: #93c5fd;" 
+      onmouseover="this.style.background='rgba(37,99,235,0.2)'" onmouseout="this.style.background=''">${data.title}</div>
+  `).join('') : '<div style="font-size: 11px; color: var(--text-dim);">No targets found.</div>';
+}
+
+function selectTargetById(id) {
+  const items = document.querySelectorAll('.target-item');
+  items.forEach(item => {
+    if (item.dataset.id === id) {
+      selectTarget(item, id);
+    }
+  });
+}
+
+// ── REFRESH ──
+function refreshMap() {
+  drawMoon();
+  showToast('Map refreshed');
+}
+
+function resetView() {
+  currentZoom = 'unaided';
+  labelsVisible = false;
+  document.getElementById('btn-labels').textContent = 'Labels Off';
+  document.getElementById('btn-labels').classList.remove('active');
+  document.querySelectorAll('.zoom-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('btn-unaided').classList.add('active');
+  drawMoon();
+  showToast('View reset');
+}
+
+// ── MORE TABS ──
+function showMoreTabs() {
+  showModal('Additional Views', `
+    <ul>
+      <li style="margin-bottom: 8px;"><strong>3D Lunar Globe</strong> — Rotating 3D view of the Moon</li>
+      <li style="margin-bottom: 8px;"><strong>Geology Map</strong> — Geologic units and formations</li>
+      <li style="margin-bottom: 8px;"><strong>Albedo Map</strong> — Surface brightness visualization</li>
+      <li style="margin-bottom: 8px;"><strong>Topography Map</strong> — LOLA elevation data</li>
+      <li style="margin-bottom: 8px;"><strong>Far Side View</strong> — Dedicated farside targeting</li>
+    </ul>
+    <p style="margin-top: 10px; color: var(--text-dim); font-size: 10px;">These views are available in the full LTP application used by the Artemis II crew aboard Orion.</p>
+  `);
+}
+
+// ── WORKFLOW MODALS ──
+const workflowDetails = {
+  1: {
+    title: '1. Feature Identification',
+    content: `
+      <p><strong>Objective:</strong> Identify and classify the lunar feature being observed.</p>
+      <ul style="margin-top: 8px; padding-left: 16px; line-height: 1.8;">
+        <li><strong>Feature type/name:</strong> Basin, crater, mare, highland, rille, dorsum...</li>
+        <li><strong>Target? (yes/no):</strong> Is this a planned LTP target or opportunistic?</li>
+        <li><strong>Location:</strong> Nearside / Farside, relative position to major landmarks</li>
+        <li><strong>Observation style:</strong> Naked eye, 135mm, 200mm, or 400mm focal length</li>
+      </ul>
+      <p style="margin-top: 10px; color: #fde68a;">This is the foundation step — confirm what you are looking at before proceeding.</p>
+    `
+  },
+  2: {
+    title: '2. Geometry',
+    content: `
+      <p><strong>Objective:</strong> Describe the physical shape and preservation of the feature.</p>
+      <ul style="margin-top: 8px; padding-left: 16px; line-height: 1.8;">
+        <li><strong>Size:</strong> Estimate diameter relative to known features (e.g., Orientale ~950 km ≈ distance JSC to KSC)</li>
+        <li><strong>Shape:</strong> Circular, elliptical, irregular, multi-ringed, degraded?</li>
+        <li><strong>Boundary Preservation:</strong> Are edges crisp (young) or eroded (old)? Are rims intact?</li>
+      </ul>
+      <p style="margin-top: 10px; color: #fde68a;">Geometry tells you about the impact energy, age, and subsequent modification of the feature.</p>
+    `
+  },
+  3: {
+    title: '3. Color & Shadow',
+    content: `
+      <p><strong>Objective:</strong> Document photometric properties of the feature.</p>
+      <ul style="margin-top: 8px; padding-left: 16px; line-height: 1.8;">
+        <li><strong>Color tone:</strong> Gray, brown, bluish (young impact melt), reddish (pyroclastics)?</li>
+        <li><strong>Albedo:</strong> High-albedo (bright, fresh ejecta), low-albedo (dark mare, impact melt interior)?</li>
+        <li><strong>Shadows/illumination:</strong> Where is the terminator? What does shadow geometry reveal about topography?</li>
+      </ul>
+      <p style="margin-top: 10px; color: #fde68a;">Color and albedo differences reveal composition and age of surface materials.</p>
+    `
+  },
+  4: {
+    title: '4. Structure & Texture',
+    content: `
+      <p><strong>Objective:</strong> Characterize the surface at the mesoscale.</p>
+      <ul style="margin-top: 8px; padding-left: 16px; line-height: 1.8;">
+        <li><strong>Structures:</strong> Ring mountains, central peaks, terraced walls, ejecta blankets, ray systems</li>
+        <li><strong>Slopes:</strong> Steep, gentle, irregular? Evidence of mass wasting?</li>
+        <li><strong>Texture:</strong> Smooth (mare), rough (ejecta, highlands), hummocky, grooved?</li>
+      </ul>
+      <p style="margin-top: 10px; color: #fde68a;">Structural analysis helps reconstruct the formation history of the feature.</p>
+    `
+  },
+  5: {
+    title: '5. Geologic Relations',
+    content: `
+      <p><strong>Objective:</strong> Understand how this feature relates to surrounding geology.</p>
+      <ul style="margin-top: 8px; padding-left: 16px; line-height: 1.8;">
+        <li><strong>Association:</strong> What other features is this associated with? Is it part of a system?</li>
+        <li><strong>Contact habit:</strong> Sharp contact, gradational contact, or buried/overlapping?</li>
+        <li><strong>Contact relationship:</strong> Which feature is older? (the one below or overlapped is older)</li>
+      </ul>
+      <p style="margin-top: 10px; color: #fde68a;">Geologic relationships allow relative age dating and understanding of lunar evolution.</p>
+    `
+  }
+};
+
+function openWorkflowModal(step) {
+  const d = workflowDetails[step];
+  if (d) showModal(d.title, d.content);
+}
+
+function openThoughtsModal() {
+  showModal('★ Thoughts & Interpretations', `
+    <p><strong>After completing your observations, reflect on:</strong></p>
+    <ul style="margin-top: 8px; padding-left: 16px; line-height: 1.8;">
+      <li><strong>Impressions:</strong> What stood out most? What surprised you?</li>
+      <li><strong>Interpretations:</strong> What do your observations suggest about the feature's history?</li>
+      <li><strong>Any changes?</strong> Would you adjust any previous observations? New context?</li>
+    </ul>
+    <div style="margin-top: 14px;">
+      <textarea placeholder="Add your thoughts and interpretations here..." 
+        style="width:100%; height:80px; background: rgba(255,255,255,0.05); border: 1px solid rgba(59,130,246,0.3); border-radius: 4px; padding: 8px; color: white; font-size: 11px; resize: vertical; font-family: inherit; outline: none;"></textarea>
+    </div>
+    <button onclick="saveThoughts(this)" style="margin-top: 8px; padding: 5px 12px; background: rgba(22,163,74,0.3); border: 1px solid rgba(22,163,74,0.5); border-radius: 4px; color: #86efac; cursor: pointer; font-size: 11px;">Save Thoughts</button>
+  `);
+}
+
+function saveThoughts(btn) {
+  btn.textContent = '✓ Saved';
+  btn.style.background = 'rgba(22,163,74,0.6)';
+  showToast('Thoughts saved to mission log');
+}
+
+// ── MODAL HELPERS ──
+function showModal(title, body) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('mainModal').classList.add('visible');
+}
+
+function closeModal() {
+  document.getElementById('mainModal').classList.remove('visible');
+}
+
+// ── TOAST ──
+function showToast(msg) {
+  const toast = document.getElementById('statusToast');
+  toast.textContent = '✓ ' + msg;
+  toast.classList.add('show');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => toast.classList.remove('show'), 2000);
+}
+
+// ── RESIZE HANDLING ──
+function resizeMoon() {
+  if (!moonCanvas) return;
+  const container = document.getElementById('moonContainer');
+  moonCanvas.width = container.clientWidth;
+  moonCanvas.height = container.clientHeight;
+}
+
+window.addEventListener('resize', () => {
+  resizeMoon();
+  drawMoon();
+});
+
+// ── TIMELINE INIT ──
+function initTimeline() {
+  const panel = document.getElementById('timeline-panel');
+  const items = [
+    { time: '20:45 GMT', name: 'Flyby Start', desc: 'Begin lunar observation activities. All crew at stations.', type: 'ops' },
+    { time: '20:50 GMT', name: 'Discussion: Warm Up', desc: 'Help orient each other using major landmarks on the nearside.', type: 'ops' },
+    { time: '21:00 GMT', name: 'Discussion: Nearside/Farside', desc: 'Compare mare and rayed craters on nearside vs farside.', type: 'science' },
+    { time: '21:05 GMT', name: '10. Glushko Crater (1/2)', desc: 'First photometric observation. High albedo complex crater with ray system.', type: 'science' },
+    { time: '21:10 GMT', name: '11. Glushko Crater (2/2)', desc: 'Second photometric observation. Compare perception changes.', type: 'science' },
+    { time: '20:55 GMT', name: 'd. Cabin & Window Teams Swap', desc: 'Operational crew rotation.', type: 'crew' },
+    { time: '21:18 GMT', name: '12. Orientale Basin', desc: 'Youngest large basin. Multi-ring structure. Mosaic and color documentation.', type: 'science' },
+    { time: '21:34 GMT', name: '13. Hertzsprung Basin', desc: 'Older degraded multiring basin for comparison with Orientale.', type: 'science' },
+    { time: '21:41 GMT', name: 'e. Window Team Position Swap', desc: 'Window team rotation.', type: 'crew' },
+    { time: '21:42 GMT', name: '14. Crew Choice #2', desc: 'Free exploration — crew selects feature of interest.', type: 'crew' },
+    { time: '22:05 GMT', name: 'f. Discussion: Terminator', desc: 'Describe topography near terminator. SPA and Apollo Basin focus.', type: 'ops' },
+    { time: '22:15 GMT', name: 'f. Observing Teams Swap', desc: 'Full team rotation for new shift.', type: 'crew' },
+    { time: '22:30 GMT', name: '15. Ohm Crater', desc: 'Small complex crater with prominent ray system. Compare with Glushko.', type: 'science' },
+    { time: '22:45 GMT', name: '16. Earthset', desc: 'Earth disappears behind lunar limb. Observe color changes.', type: 'science' },
+    { time: '23:00 GMT', name: '17. Impact Flashes', desc: 'Watch for short-lived flashes on dark lunar surface. Citizen Science.', type: 'science' },
+    { time: '23:02 GMT', name: '⭐ Closest Approach', desc: 'Spacecraft at minimum distance to Moon. Peak observation opportunity.', type: 'ops' },
+    { time: '23:15 GMT', name: '18. Lofted Lunar Dust', desc: 'Look for exosphere dust backlit by Earth along dark western limb.', type: 'science' },
+    { time: '23:25 GMT', name: '19. Earthrise', desc: 'Earth rises above lunar limb. Mirrors historic Apollo 8 image.', type: 'science' },
+    { time: '23:45 GMT', name: '20. Sunset / Eclipse Begins', desc: 'Total solar eclipse from Orion. Solar corona visible.', type: 'science' },
+    { time: '00:45 GMT', name: 'Eclipsed Moon', desc: 'Only Earthshine illuminates Moon. Unique dark vantage.', type: 'science' },
+    { time: '01:00 GMT', name: 'Sunrise', desc: 'Sun emerges from behind Moon. Second corona observation.', type: 'science' },
+    { time: '01:20 GMT', name: 'Flyby End', desc: 'Lunar flyby activities complete. Return trajectory.', type: 'ops' },
+  ];
+
+  panel.innerHTML = items.map(item => `
+    <div class="timeline-item">
+      <span class="timeline-time">${item.time}</span>
+      <div class="timeline-content">
+        <div class="timeline-name">${item.name}</div>
+        <div class="timeline-desc">${item.desc}</div>
+      </div>
+      <span class="timeline-badge tb-${item.type}">${item.type.toUpperCase()}</span>
+    </div>
+  `).join('');
+}
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  initMoon();
+  initTimeline();
+  // Start with targets view
+  document.getElementById('targets-panel').style.display = 'flex';
+
+  // Close settings/onenote on outside click
+  document.addEventListener('click', (e) => {
+    const settings = document.getElementById('settingsPanel');
+    const onenote = document.getElementById('oneNotePanel');
+    if (!settings.contains(e.target) && !e.target.closest('.settings-btn')) {
+      settings.classList.remove('open');
+    }
+  });
+});
+</script>
+</body>
+</html>
